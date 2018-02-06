@@ -10,7 +10,13 @@
 """
 Introduction
 """
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy as sp
-
+from contextlib import contextmanager
+import time
+@contextmanager
+def timeblock ( label ):
+    start = time.perf_counter ()
+    try:
+        yield
+    finally:
+        end = time.perf_counter ()
+        print ('{}:{} '. format (label , end - start ))

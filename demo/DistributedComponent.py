@@ -12,7 +12,7 @@ from openmdao.api import Problem, ExplicitComponent, Group, IndepVarComp, PETScV
 
 from openmdao.utils.mpi import MPI
 from openmdao.utils.array_utils import evenly_distrib_idxs
-from openmdao.utils.mpi import MPI
+#from openmdao.utils.mpi import MPI
 import unittest
 
 if not MPI:
@@ -61,8 +61,7 @@ class Summer(ExplicitComponent):
         # NOTE: you must specify src_indices here for the input. Otherwise,
         #       you'll connect the input to [0:local_input_size] of the
         #       full distributed output!
-        self.add_input('invec', np.ones(sizes[self.comm.rank], float),\
-					src_indices=np.arange(start, end, dtype=int))
+        self.add_input('invec', np.ones(sizes[self.comm.rank], float), src_indices=np.arange(start, end, dtype=int))
         self.add_output('out', 0.0)
 
     def compute(self, inputs, outputs):
