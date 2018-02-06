@@ -1,0 +1,33 @@
+Component.add_input('x',val) : dict
+
+name : str
+
+name of the variable
+
+val=1.0 : float/list/tuple/ndarray/iterable
+
+The initial value
+
+shape=None : int/tuple/list/None
+
+Shape of this variable,  only required if src_indices not provided and val is not an array.
+
+src_indices=None : int/list[ints]/tuple(ints)/ndarray([ints])/iterable(ints)/None
+
+The global indices of the source variable to transfer data from.
+
+flat_src_indices=None : bool
+
+If True, each entry of src_indices is assumed to be an index into the flattened source. 
+
+units=None : str/None
+
+Units in which this input variable will be provided to the component during execution. 
+
+desc='' : str
+
+description of the variable
+
+var_set=0 : hashable oject
+
+For advanced users only. ID or color for this variable, relevant for reconfigurability.

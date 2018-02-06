@@ -1,0 +1,12880 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{gray}{rgb}{0.95,0.95,0.95}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mypink}{rgb}{1,0,1}
+\definecolor{myorange}{rgb}{1,0.5,0}
+\definecolor{lightgray}{gray}{0.9}
+\setlength{\columnseprule}{0.8pt}
+\newcommand{\ttt}[1]{\colorbox{gray}{\lstinline$#1$}}
+\newcommand{\err}[1]{\colorbox{red}{\lstinline$#1$}}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement H
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation landscape
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\topmargin 1cm
+\rightmargin 1cm
+\bottommargin 1cm
+\columnsep 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+\listings_params "backgroundcolor={\color{gray}},numbers=none,commentstyle={\color{mypink}},keywordstyle={\color{myorange}},frame=shadowbox,language=Python,identifierstyle={\color{blue}},tabsize=4,basicstyle={\ttfamily},breaklines=true,postbreak={\mbox{\textcolor{red}{$\hookrightarrow$}\space}}"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+OpenMDAO Note
+\end_layout
+
+\begin_layout Author
+Xin Shi xshi@kth.se
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction Single Disciplinary Optimization
+\end_layout
+
+\begin_layout Subsection
+Component
+\end_layout
+
+\begin_layout Standard
+the smallest unit of computational work the framework understands.Each component
+ will output its own set of variables.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is a simple numerical model:
+\begin_inset Formula 
+\begin{align*}
+y & \Leftarrow\cos(xy)-zy=0\\
+z & \Leftarrow\sin(y)=0
+\end{align*}
+
+\end_inset
+
+where we have 3 variables 
+\begin_inset Formula $x,y$
+\end_inset
+
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+ Independent variable component 
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+ Explicitly (computed dependent variable) component 
+\begin_inset Formula $z$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+ Implicitly (computed dependent variable) component 
+\begin_inset Formula $y$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+And the relation between 
+\begin_inset Formula $x,y,z$
+\end_inset
+
+ together with their type is
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+center
+\end_layout
+
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="4">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Component
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Inputs
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Outputs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x,z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $y$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $y$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+relation between 
+\begin_inset Formula $x,y,z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+It is also valid to have one component compute both 
+\begin_inset Formula $y$
+\end_inset
+
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+ explicitly.
+ This component solves the implicit equation for 
+\begin_inset Formula $y$
+\end_inset
+
+ internally
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+center
+\end_layout
+
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="4">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Component
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Inputs
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Outputs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $y,z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Another relation between 
+\begin_inset Formula $x,y,z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The first way is recommended.
+ OpenMDAO would automatically combine and assemble the derivatives from
+ components 2 and 3.
+\end_layout
+
+\begin_layout Subsection
+A Single Disciplinary Model
+\end_layout
+
+\begin_layout Standard
+consider a paraboloid, defined by the explicit function
+\begin_inset Formula 
+\[
+f(x,y)=(x-3)^{2}+xy+(y+4)^{2}-3
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ are the inputs to the function.
+ The minimum of this function is located at 
+\begin_inset Formula 
+\[
+x=\frac{20}{3},\ y=-\frac{22}{3}
+\]
+
+\end_inset
+
+The code is 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from __future__ import division, print_function 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.explicitcomponent import ExplicitComponent
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class Paraboloid(ExplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x', val=0.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('y', val=0.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('f_xy', val=0.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Finite difference all partials.
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.declare_partials('*', '*', method='fd')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def compute(self, inputs, outputs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        x = inputs['x']
+\end_layout
+
+\begin_layout Plain Layout
+
+        y = inputs['y']
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        outputs['f_xy'] = (x-3.0)**2 + x*y + (y+4.0)**2 - 3.0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+if __name__ == "__main__":
+\end_layout
+
+\begin_layout Plain Layout
+
+    from openmdao.core.problem import Problem
+\end_layout
+
+\begin_layout Plain Layout
+
+    from openmdao.core.group import Group
+\end_layout
+
+\begin_layout Plain Layout
+
+    from openmdao.core.indepvarcomp import IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    model = Group()
+\end_layout
+
+\begin_layout Plain Layout
+
+    ivc = IndepVarComp()
+\end_layout
+
+\begin_layout Plain Layout
+
+    ivc.add_output('x', 3.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+    ivc.add_output('y', -4.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+    model.add_subsystem('des_vars', ivc)
+\end_layout
+
+\begin_layout Plain Layout
+
+    model.add_subsystem('parab_comp', Paraboloid())
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    model.connect('des_vars.x', 'parab_comp.x')
+\end_layout
+
+\begin_layout Plain Layout
+
+    model.connect('des_vars.y', 'parab_comp.y')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob = Problem(model)
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+    print(prob['parab_comp.f_xy'])
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob['des_vars.x'] = 5.0
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob['des_vars.y'] = -2.0
+\end_layout
+
+\begin_layout Plain Layout
+
+    prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+    print(prob['parab_comp.f_xy']) 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Preamble
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from __future__ import division, print_function 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.explicitcomponent import ExplicitComponent
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{print_function}
+\end_layout
+
+\end_inset
+
+ to make the code work in Python 2 or 3
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{division}
+\end_layout
+
+\end_inset
+
+ avoid 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{int/int = int}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{openmdao.core}
+\end_layout
+
+\end_inset
+
+ are all included in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{openmdao.api}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class Paraboloid(ExplicitComponent):
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You will always define components as a sub-class of either 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since this simple paraboloid function is explicit, we'll use the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+.
+ The two methods defined are
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+define all inputs 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{self.add_input('x', val=0.0)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+define all outputs 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{self.add_output('f_xy', val=0.0)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+declare derivatives
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Note that OpenMDAO supports analytic derivatives.
+ Providing analytic partial derivatives from your components can result
+ in much more efficient optimizations.
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{self.declare_partials('*', '*', method='fd')}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute}
+\end_layout
+
+\end_inset
+
+ is the calculation of all output values for the given inputs
+\end_layout
+
+\begin_layout Subsubsection
+Run-Script
+\end_layout
+
+\begin_layout Standard
+All OpenMDAO models are built up from a hierarchy of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{model = Group()}
+\end_layout
+
+\end_inset
+
+ instances that organize the components.
+\end_layout
+
+\begin_layout Standard
+Here the hierarchy is very simple, consisting of a single root group that
+ holds two components.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ivc = IndepVarComp()}
+\end_layout
+
+\end_inset
+
+ and set the output of the components and initial guess 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ivc.add_output('x', 3.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+ivc.add_output('y', -4.0)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Paraboloid()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and add these two component as subsystem
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.add_subsystem('des_vars', ivc)
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('parab_comp', Paraboloid())
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As part of the the model hierarchy, you will also define any connections
+ to move data between components in the relevant group.
+ Here, we connect the independent variables to the inputs on the paraboloid
+ component.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.connect('des_vars.x', 'parab_comp.x')     
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect('des_vars.y', 'parab_comp.y')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once the model hierarchy is defined, we pass it to the constructor of the
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Problem}
+\end_layout
+
+\end_inset
+
+ class.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob = Problem(model)
+\end_layout
+
+\end_inset
+
+Then we call the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+ method on that problem which tells the framework to do some initial work
+ to get the data structures in place for execution.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.setup()
+\end_layout
+
+\end_inset
+
+In this case, we call 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{run_model()}
+\end_layout
+
+\end_inset
+
+ to actually perform the computation
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Later, we’ll see how to explicitly set drivers and will be calling run_driver()
+ instead.
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+We can set and get values using the problem.
+ If we reset the independent variables, it will not do the optimization
+ part but output the target function directly.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob['des_vars.x'] = 5.0
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['des_vars.y'] = -2.0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Optimization of Paraboloid
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+center
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename problem_diagram.png
+	width 50line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+All analyses and optimizations in OpenMDAO are executed with an instance
+ of the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Problem}
+\end_layout
+
+\end_inset
+
+ class.
+ This class serves as a 
+\series bold
+container
+\series default
+ for your model and the driver you've chosen, and provides methods for you
+ to
+\series bold
+ 
+\end_layout
+
+\begin_layout Itemize
+run the model, 
+\end_layout
+
+\begin_layout Itemize
+run the driver, and
+\end_layout
+
+\begin_layout Itemize
+set and get variable values.
+\end_layout
+
+\begin_layout Standard
+Every problem has a single driver and a single model with it.
+ Here we do slight modifications to the Paraboloid model
+\begin_inset Formula 
+\begin{align*}
+\min f(x,y) & =(x-3)^{2}+xy+(y+4)^{2}-3\\
+\text{s.t. } & 0\leq x+y\leq10\\
+ & -50\leq x\leq50\\
+ & -50\leq y\leq50
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Run-Script
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ScipyOptimizer, ExecComp, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# We'll use the component that was defined in the last tutorial 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.test_suite.components.paraboloid 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+import Paraboloid
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# build the model 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+indeps = prob.model.add_subsystem('indeps', IndepVarComp()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+indeps.add_output('x', 3.0) 
+\end_layout
+
+\begin_layout Plain Layout
+
+indeps.add_output('y', -4.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('parab', Paraboloid())
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# define the component whos output will be constrained 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('const', ExecComp('g = x + y'))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('indeps.x', ['parab.x', 'const.x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('indeps.y', ['parab.y', 'const.y'])
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# setup the optimization 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver = ScipyOptimizer() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver.options['optimizer'] = 'COBYLA'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_design_var('indeps.x', lower=-50, upper=50)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_design_var('indeps.y', lower=-50, upper=50)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_objective('parab.f_xy')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# to add the constraint to the model 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_constraint('const.g', lower=0, upper=10.) 
+\end_layout
+
+\begin_layout Plain Layout
+
+# prob.model.add_constraint('const.g', equals=0.)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_driver() 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# minimum value 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['parab.f_xy']) 
+\end_layout
+
+\begin_layout Plain Layout
+
+# location of the minimum 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indeps.x']) 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indeps.y'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExecComp}
+\end_layout
+
+\end_inset
+
+ lets you define new calculations just by typing in the expression.
+ It supports basic math operations, and even some of numpy's more advanced
+ methods.
+ It also supports both scalar and array data as well.
+\end_layout
+
+\begin_layout Subsubsection
+Set a Driver
+\end_layout
+
+\begin_layout Standard
+Tell OpenMDAO to use a specific optimizer.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.driver = ScipyOptimizer()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver.options['optimizer'] = 'COBYLA'
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Define the Design Variables and Objective
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_design_var()}
+\end_layout
+
+\end_inset
+
+ will always be the output of an 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.add_design_var('indeps.x', lower=-50, upper=50) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_design_var('indeps.y', lower=-50, upper=50)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+For 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_objective}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_constraint}
+\end_layout
+
+\end_inset
+
+ the variable can be the output of any component (including 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+hard to set!!!!
+\end_layout
+
+\end_inset
+
+).
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.add_objective('paraboloid.f_xy') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_constraint('const.g', lower=0, upper=10.)
+\end_layout
+
+\begin_layout Plain Layout
+
+#prob.model.add_constraint('const.g', equals=0.)
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Although these calls always point to a specific variable, that variable
+ doesn't have to be a scalar value.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Summary
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+center
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename basic_problem.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+basic problem organization 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+Core Features
+\end_layout
+
+\begin_layout Section
+Components
+\end_layout
+
+\begin_layout Subsection
+Declare variables
+\end_layout
+
+\begin_layout Standard
+Every component in an OpenMDAO model is an instance of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{IndepVarComp}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+, or a 
+\series bold
+subclass
+\series default
+ of one of these classes.
+ Each component has 
+\series bold
+input
+\series default
+ variables and 
+\series bold
+output
+\series default
+ variables that it 
+\series bold
+must
+\series default
+ declare.
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+, the user must call 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_input}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_output}
+\end_layout
+
+\end_inset
+
+ to declare variables in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup}
+\end_layout
+
+\end_inset
+
+ method.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Method Signature
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Component.add_input(name) : dict}
+\end_layout
+
+\end_inset
+
+ metadata for added variable
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename self.add_input('x',val).png
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Component.add_output(name) : dict}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename self.add_output(name).png
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Component.add_output(name) : dict}
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Component.add_output(name) : dict"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Declare with only the default value
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class CompAddWithDefault(ExplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_a')
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_b', val=3.)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_c', val=(3., 3.))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_d', val=[3., 3.])
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_e', val=3.
+ * np.ones((2, 2)))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_a')
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_b', val=6.)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_c', val=(6., 6., 6.))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_d', val=[6., 6., 6.])
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_e', val=6.
+ * np.ones((3, 2)))
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_add_var import CompAddWithDefault
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem(model=CompAddWithDefault())
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_a'])	# [1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['y_a'])	# [1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(type(p['y_a']))	# <class 'numpy.ndarray'>
+\end_layout
+
+\begin_layout Plain Layout
+
+print(type(p['x_a']))	# <class 'numpy.ndarray'>
+\end_layout
+
+\end_inset
+
+every thing is transformed into 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{print(numpy.ndarray}
+\end_layout
+
+\end_inset
+
+ object.
+\end_layout
+
+\begin_layout Enumerate
+Declare with only the shape argument.
+ Auto evaluate as 1.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class CompAddWithShape(ExplicitComponent):     
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_a', shape=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_b', shape=(2, 2))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_c', shape=[2, 2])
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_a', shape=3)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_b', shape=(3, 3))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y_c', shape=[3, 3])
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_add_var import CompAddWithShape
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem(model=CompAddWithShape())
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_a'])	# [ 1.
+  1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_c'])	# [[ 1.
+  1.]  [ 1.
+  1.]]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Declare with only the indices argument.
+ Auto evaluated as 1.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class CompAddWithIndices(ExplicitComponent):     
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_a', src_indices=0)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_b', src_indices=(0, 1))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_c', src_indices=[0, 1])
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_d', src_indices=np.arange(6))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x_e', 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	src_indices=np.arange(6).reshape((3, 2)), shape=(3,2))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y')
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_add_var import CompAddWithIndices
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem(model=CompAddWithIndices()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_a'])	# [ 1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_c'])	# [ 1.
+  1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_d'])	# [ 1.
+  1.
+  1.
+  1.
+  1.
+  1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['x_e'])	# [[ 1.
+  1.]  [ 1.
+  1.]  [ 1.
+  1.]]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Declare an array variable with a scalar default value.
+ Auto evaluated as 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{val}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Declare with an array 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{val}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{src_indices}
+\end_layout
+
+\end_inset
+
+ (their shapes must match)
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_input('x_b', val=2.0 * np.ones((3, 2)), 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+			src_indices=np.arange(6).reshape((3, 2)))
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Declare an output with bounds.
+ Scalar value will be duplicated.
+ Array data must match shape of 
+\begin_inset Formula $y$
+\end_inset
+
+.
+ Automatically set as the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{lower}
+\end_layout
+
+\end_inset
+
+ value(s).
+\end_layout
+
+\begin_layout Subsection
+IndepVarComp
+\end_layout
+
+\begin_layout Standard
+Independent variables are those that are set externally to the model—therefore,
+ they are called 
+\series bold
+model
+\series default
+ 
+\series bold
+inputs
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+From the perspective of a 
+\series bold
+component
+\series default
+, they are component 
+\series bold
+outputs
+\series default
+ that 
+\series bold
+do not
+\series default
+ depend on any component inputs, i.e.
+ no 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_input()}
+\end_layout
+
+\end_inset
+
+ method.
+\end_layout
+
+\begin_layout Standard
+From the perspective of a 
+\series bold
+model
+\series default
+, they can be viewed as 
+\series bold
+design
+\series default
+ 
+\series bold
+variables
+\series default
+ or model parameters that are set by the user or driver, 
+\series bold
+prior
+\series default
+ to running the model.
+\end_layout
+
+\begin_layout Subsubsection
+Method Signature
+\end_layout
+
+\begin_layout Standard
+only have 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_output()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Component.add_output(name) : dict}
+\end_layout
+
+\end_inset
+
+ see Figure 
+\begin_inset CommandInset ref
+LatexCommand vref
+reference "fig:Component.add_output(name) : dict"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Define one independent variable and set its value.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+comp = IndepVarComp('indep_var') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(comp).setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var'])	# [ 1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['indep_var'] = 2.0 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var'])	# 2.0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Define one independent variable with default value.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+comp = IndepVarComp('indep_var', val=2.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(comp).setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var'])	# [ 2.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Define one independent variable with a default value and additional options.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+comp = IndepVarComp('indep_var', val=2.0, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	units='m', lower=0, upper=10) 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(comp).setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var'])	# [ 2.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Define one independent array variable.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{val=array_}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Define two independent variables using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_output()}
+\end_layout
+
+\end_inset
+
+ method with additional options.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+comp = IndepVarComp() 
+\end_layout
+
+\begin_layout Plain Layout
+
+comp.add_output('indep_var_1', val=1.0, lower=0, upper=10)
+\end_layout
+
+\begin_layout Plain Layout
+
+comp.add_output('indep_var_2', val=2.0, lower=1, upper=20)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(comp).setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var_1'])	# [ 1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['indep_var_1'])	# [ 2.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+ExplicitComponent
+\end_layout
+
+\begin_layout Standard
+Explicit variables are those that are computed as an 
+\series bold
+explicit
+\series default
+ 
+\series bold
+function
+\series default
+ of other 
+\series bold
+variables
+\series default
+.
+ For example
+\begin_inset Formula 
+\[
+z=sin(y)
+\]
+
+\end_inset
+
+In OpenMDAO, explicit variables are defined by writing a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{class}
+\end_layout
+
+\end_inset
+
+ that inherits from the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+ class.
+ The explicit variables 
+\begin_inset Formula $z$
+\end_inset
+
+ would be considered 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{outputs}
+\end_layout
+
+\end_inset
+
+ while 
+\begin_inset Formula $y$
+\end_inset
+
+ would be considered 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{inputs}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+ExplicitComponent Methods
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ExplicitComp.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ExplicitComponent
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+note that in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup}
+\end_layout
+
+\end_inset
+
+ part, it will override the setting in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute_partials()}
+\end_layout
+
+\end_inset
+
+ by setting 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{declare_partials(..., val=constant_)}
+\end_layout
+
+\end_inset
+
+ to avoid extra computation.
+ See [TODO]
+\end_layout
+
+\begin_layout Subsection
+ImplicitComponent - 
+\begin_inset CommandInset href
+LatexCommand href
+name "ImplicitComp"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/implicitcomp.html#comp-type-3-implicitcomp"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Implicit variables are those that are computed as an 
+\series bold
+implicit
+\series default
+ 
+\series bold
+function
+\series default
+ 
+\series bold
+of 
+\series default
+other variables.
+ 
+\begin_inset Formula 
+\[
+y\Longleftarrow\cos(xy)-zy=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+ImplicitComponent Methods
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ImplicitComp.png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ImplicitComponent
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Distributed Components - 
+\begin_inset CommandInset href
+LatexCommand href
+name "distributed = True"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/distributed_comps.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A distributed component is a component that operates on 
+\series bold
+distributed
+\series default
+ 
+\series bold
+variables
+\series default
+.
+ A variable is distributed if each process contains only 
+\series bold
+a
+\series default
+ 
+\series bold
+part of 
+\series default
+the whole variable.
+\end_layout
+
+\begin_layout Standard
+Several keys
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{src_indices}
+\end_layout
+
+\end_inset
+
+ set the source indices
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{p.setup(vector_class=PETScVector)}
+\end_layout
+
+\end_inset
+
+ is a must
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{self.distributed = True}
+\end_layout
+
+\end_inset
+
+ is a must in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{__init__(self,size)}
+\end_layout
+
+\end_inset
+
+ of the subclass.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{evenly_distrib_idxs}
+\end_layout
+
+\end_inset
+
+ to generate evenly distributed array indices
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, ExplicitComponent, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+					Group, IndepVarComp, PETScVector 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.utils.mpi import MPI 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.utils.array_utils import evenly_distrib_idxs
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.utils.mpi import MPI
+\end_layout
+
+\begin_layout Plain Layout
+
+import unittest
+\end_layout
+
+\begin_layout Plain Layout
+
+if not MPI:     
+\end_layout
+
+\begin_layout Plain Layout
+
+	raise unittest.SkipTest()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+rank = MPI.COMM_WORLD.rank 
+\end_layout
+
+\begin_layout Plain Layout
+
+size = 15
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class DistribComp(ExplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def __init__(self, size):
+\end_layout
+
+\begin_layout Plain Layout
+
+        super(DistribComp, self).__init__()
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.size = size
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.distributed = True
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def compute(self, inputs, outputs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        if self.comm.rank == 0:
+\end_layout
+
+\begin_layout Plain Layout
+
+            outputs['outvec'] = inputs['invec'] * 2.0
+\end_layout
+
+\begin_layout Plain Layout
+
+        else:
+\end_layout
+
+\begin_layout Plain Layout
+
+            outputs['outvec'] = inputs['invec'] * -3.0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        comm = self.comm
+\end_layout
+
+\begin_layout Plain Layout
+
+        rank = comm.rank
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        # this results in 8 entries for proc 0 and 7 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+		# entries for proc 1 when using 2 processes.
+\end_layout
+
+\begin_layout Plain Layout
+
+        sizes, offsets = evenly_distrib_idxs(comm.size, self.size)
+\end_layout
+
+\begin_layout Plain Layout
+
+        start = offsets[rank]
+\end_layout
+
+\begin_layout Plain Layout
+
+        end = start + sizes[rank]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('invec', np.ones(sizes[rank], float), 
+\backslash
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+					src_indices=np.arange(start, end, dtype=int))        
+\end_layout
+
+\begin_layout Plain Layout
+
+		self.add_output('outvec', np.ones(sizes[rank], float))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class Summer(ExplicitComponent):     
+\end_layout
+
+\begin_layout Plain Layout
+
+    def __init__(self, size):
+\end_layout
+
+\begin_layout Plain Layout
+
+        super(Summer, self).__init__()
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.size = size
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        # this results in 8 entries for proc 0 and 
+\end_layout
+
+\begin_layout Plain Layout
+
+        #7 entries for proc 1 when using 2 processes.
+\end_layout
+
+\begin_layout Plain Layout
+
+        sizes, offsets = evenly_distrib_idxs(self.comm.size, self.size)
+\end_layout
+
+\begin_layout Plain Layout
+
+        start = offsets[rank]
+\end_layout
+
+\begin_layout Plain Layout
+
+        end = start + sizes[rank]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        # NOTE: you must specify src_indices here for the input.
+ Otherwise,
+\end_layout
+
+\begin_layout Plain Layout
+
+        #       you'll connect the input to [0:local_input_size] of the
+\end_layout
+
+\begin_layout Plain Layout
+
+        #       full distributed output!
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('invec', np.ones(sizes[self.comm.rank], float),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+					src_indices=np.arange(start, end, dtype=int))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('out', 0.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def compute(self, inputs, outputs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        data = np.zeros(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+        data[0] = np.sum(self._inputs['invec'])
+\end_layout
+
+\begin_layout Plain Layout
+
+        total = np.zeros(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.comm.Allreduce(data, total, op=MPI.SUM)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self._outputs['out'] = total[0]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem(model=Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+top = p.model
+\end_layout
+
+\begin_layout Plain Layout
+
+top.add_subsystem("indep", IndepVarComp('x', np.zeros(size)))
+\end_layout
+
+\begin_layout Plain Layout
+
+top.add_subsystem("C2", DistribComp(size))
+\end_layout
+
+\begin_layout Plain Layout
+
+top.add_subsystem("C3", Summer(size))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+top.connect('indep.x', 'C2.invec') 
+\end_layout
+
+\begin_layout Plain Layout
+
+top.connect('C2.outvec', 'C3.invec')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup(vector_class=PETScVector)
+\end_layout
+
+\begin_layout Plain Layout
+
+p['indep.x'] = np.ones(size)
+\end_layout
+
+\begin_layout Plain Layout
+
+p.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['C3.out'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Specifying Units for Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "units, res_units"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/units.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset href
+LatexCommand href
+name "unit library"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/units.html#feature-units"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+we can specify units for inputs, outputs, and residuals.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_input(..., units=None)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{add_output(..., units=None, res_units=None)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Every connect will do the unit conversion automatically
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class SpeedComp(ExplicitComponent):     
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('distance', val=1.0, units='km')
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('time', val=1.0, units='h')
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('speed', val=1.0, units='km/h')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def compute(self, inputs, outputs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        outputs['speed'] = inputs['distance'] / inputs['time']
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+every print will be based on their own 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{units}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group,
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+		IndepVarComp, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_units import SpeedComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+comp = IndepVarComp() 
+\end_layout
+
+\begin_layout Plain Layout
+
+comp.add_output('distance', val=1., units='m') 
+\end_layout
+
+\begin_layout Plain Layout
+
+comp.add_output('time', val=1., units='s')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(model=Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('c1', comp)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('c2', SpeedComp())
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('c3', ExecComp('f=speed',speed={'units': 'm/s'}))
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('c1.distance', 'c2.distance')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('c1.time', 'c2.time')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('c2.speed', 'c3.speed')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup() prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['c1.distance'])  # units: m [ 1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['c2.speed'])  # units: km/h [ 3.6]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['c3.f'])  # units: km/h [ 1.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Scaling variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "ref, ref0"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/scaling.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+set 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ref}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ref0}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\text{normalized\ value}=\frac{x-\text{ref0}}{\text{ref}-\text{ref0}}?
+\]
+
+\end_inset
+
+all outputs and residuals are reverted to unscaled dimensional form.
+\end_layout
+
+\begin_layout Subsection
+Component metadata (arguments to components) - 
+\begin_inset CommandInset href
+LatexCommand href
+name "metadata.declare()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/metadata.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename self.metadata.declare().png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+metadata.declare()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Extra parameters neither inputs nor outputs
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import ExplicitComponent
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class VectorDoublingComp(ExplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def initialize(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.metadata.declare('size', types=int)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        size = self.metadata['size']
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x', shape=size)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('y', shape=size)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.declare_partials('y', 'x', val=2., 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+				rows=np.arange(size), cols=np.arange(size))
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+	def compute(self, inputs, outputs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        outputs['y'] = 2 * inputs['x']
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.test_suite.components.metadata_feature_vector
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+			import VectorDoublingComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('input_comp', IndepVarComp('x', shape=3))
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('main_comp', VectorDoublingComp(size=3))
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('input_comp.x', 'main_comp.x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['input_comp.x'] = [1., 2., 3.] 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model() 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['main_comp.y'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Group
+\end_layout
+
+\begin_layout Subsection
+Adding Subsystems to a Group and Promoting Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "add_subsystem()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/add_subsystem.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename add_subsystem().png
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+add_subsystem()
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:add_subsystem()"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Itemize
+Add a component to a Group
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import ExecComp, Problem
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('comp1', ExecComp('b=2.0*a', a=3.0, b=6.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['comp1.a'])	# [ 3.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+promote the input and output of a component
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import ExecComp, Problem, IndepVarComp
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('indep', IndepVarComp('a', 3.0),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_outputs=['a'])
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('comp1', ExecComp('b=2.0*a'),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_inputs=['a'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# Because the promoted names of indep.a and 
+\end_layout
+
+\begin_layout Plain Layout
+
+# comp.a are the same, indep.a is automatically 
+\end_layout
+
+\begin_layout Plain Layout
+
+# connected to comp1.a.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup() p.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['a'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Add 2 components to a Group nested within another Group
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import ExecComp, Problem, Group
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('G1', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.G1.add_subsystem('comp1', 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+			ExecComp('b=2.0*a', a=3.0, b=6.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.G1.add_subsystem('comp2', 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+			ExecComp('b=3.0*a', a=4.0, b=12.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['G1.comp1.a'])	# [ 3.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['G1.comp2.b'])	# [ 12.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Promote the input and output of components to subgroup level
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+# promotes from bottom level up 1 
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+g1 = p.model.add_subsystem('G1', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.add_subsystem('comp1', ExecComp('b=2.0*a', a=3.0, b=6.0),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+			promotes_inputs=['a'], promotes_outputs=['b'])
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.add_subsystem('comp2', ExecComp('b=3.0*a', a=4.0, b=12.0),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                 promotes_inputs=['a']) 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+# output G1.comp1.b is promoted 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['G1.b'])	# [ 6.]
+\end_layout
+
+\begin_layout Plain Layout
+
+# use unpromoted names for the following 
+\end_layout
+
+\begin_layout Plain Layout
+
+# 2 promoted inputs 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['G1.comp1.a'])	# [ 3.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['G1.comp2.a'])	# [ 4.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Promote the input and output of components from subgroup level up to top
+ level
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+# promotes up from G1 level 
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+g1 = Group()
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.add_subsystem('comp1', ExecComp('b=2.0*a', a=3.0, b=6.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.add_subsystem('comp2', ExecComp('b=3.0*a', a=4.0, b=12.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# use glob pattern 'comp?.a' to promote both comp1.a and comp2.a
+\end_layout
+
+\begin_layout Plain Layout
+
+# use glob pattern 'comp?.b' to promote both comp1.b and comp2.b 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('G1', g1,
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_inputs=['comp?.a'],
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_outputs=['comp?.b']) 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+# output G1.comp1.b is promoted 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['comp1.b'])	# [ 6.]
+\end_layout
+
+\begin_layout Plain Layout
+
+# output G1.comp2.b is promoted 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['comp2.b'])	# [ 12.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Promote with an alias to connect an input to a source
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('indep', IndepVarComp('aa', 3.0),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes=['aa'])
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('comp1', ExecComp('b=2.0*aa'),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_inputs=['aa'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# here we alias 'a' to 'aa' so that it will be automatically 
+\end_layout
+
+\begin_layout Plain Layout
+
+# connected to the independent variable 'aa'.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('comp2', ExecComp('b=3.0*a'),
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                      promotes_inputs=[('a', 'aa')])
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup() 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['comp1.b'])	# [ 6.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['comp2.b'])	# [ 9.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Connecting Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "connect()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/connect.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To cause data to flow between two systems in a model, we must connect at
+ least
+\series bold
+ one output 
+\series default
+variable from one system 
+\series bold
+to
+\series default
+ at least 
+\series bold
+one input 
+\series default
+variable from the other.
+ If the variables have 
+\series bold
+units
+\series default
+ defined, then the framework will 
+\series bold
+automatically
+\series default
+ perform the 
+\series bold
+conversion
+\series default
+.
+ We can also connect only
+\series bold
+ part of an array output
+\series default
+ 
+\series bold
+to
+\series default
+ 
+\series bold
+an
+\series default
+ 
+\series bold
+input
+\series default
+ by specifying the 
+\series bold
+indices
+\series default
+ of the entries that we want.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename connect().png
+	width 100line%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+group_.connect()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Connect an output variable to an input variable, with an automatic unit
+ conversion.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+indep = p.model.add_subsystem('indep', IndepVarComp())
+\end_layout
+
+\begin_layout Plain Layout
+
+indep.add_output('x', np.ones(5), units='ft') 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.add_subsystem('C1', ExecComp('y=sum(x)',
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+				x={'value': np.zeros(5), 'units': 'inch'},
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+                       y={'units': 'inch'}))
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.connect('indep.x', 'C1.x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.set_solver_print(level=0) 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup() 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.run_model() 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['indep.x']) # [ 1.
+  1.
+  1.
+  1.
+  1.]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(p['C1.x']) # [ 12.
+  12.
+  12.
+  12.
+  12.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Connect one output to many inputs.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+p.model.connect('indep.x', ['C1.x', 'C2.x', 'C3.x'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Connect only part of an array output to an input of a smaller size.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+p.model.connect('indep.x', 'C1.x', src_indices=[0, 1, 2])
+\end_layout
+
+\begin_layout Plain Layout
+
+p.model.connect('indep.x', 'C2.x', src_indices=[-2, 4])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Connect only part of a non-flat array output to a non-flat array input.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+p.model.connect('indep.x', 'C1.x',
+\end_layout
+
+\begin_layout Plain Layout
+
+                src_indices=[[(0,0), (-1,1)],
+\end_layout
+
+\begin_layout Plain Layout
+
+                             [(2,1), (1,1)]],
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+				flat_src_indices=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Using src_indices with Promoted Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "src_indices"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/src_indices.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+your output is an array and you only want to connect part of it to your
+ input?
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Connect an independent array variable to two different components where
+ each component gets part of the array.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_input('x', np.ones(3), src_indices=[0, 1, 2])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+A distributed component that promotes its input and receives certain entries
+ of the source array based on its rank.
+ Note that negative indices are supported.
+ In 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup(self):}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if self.comm.rank == 0:
+\end_layout
+
+\begin_layout Plain Layout
+
+	idxs = [0, 1, 2]
+\end_layout
+
+\begin_layout Plain Layout
+
+else:
+\end_layout
+
+\begin_layout Plain Layout
+
+	# use [3, -1] here rather than [3, 4] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	# just to show that we can use negative indices.
+\end_layout
+
+\begin_layout Plain Layout
+
+	idxs = [3, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+self.add_input('x', np.ones(len(idxs)), src_indices=idxs)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+The source array is shape (4,3) and the input array is shape (2,2)
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_input('x', np.ones((2,2)),                        
+\end_layout
+
+\begin_layout Plain Layout
+
+				src_indices=[[(0,0), (3,1)],
+\end_layout
+
+\begin_layout Plain Layout
+
+							[(2,1), (1,1)]],
+\end_layout
+
+\begin_layout Plain Layout
+
+                       flat_src_indices=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If the source array is shape (4,3), the input is scalar, and we want to
+ connect it to the (3, 1) entry of the source, then the add_input call might
+ look like the following if we use
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+ttt{flat_src_indices}
+\end_layout
+
+\end_inset
+
+:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_input('x', 1.0, src_indices=[10],
+\end_layout
+
+\begin_layout Plain Layout
+
+			shape=1, flat_src_indices=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# alternative
+\end_layout
+
+\begin_layout Plain Layout
+
+self.add_input('x', 1.0, 
+\end_layout
+
+\begin_layout Plain Layout
+
+		src_indices=np.array([[3,1]]), shape=1)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If the source array is flat and the input is shape (2,2), the add_input
+ call might look like this:
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+If the source array is flat, we allow the use of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{flat_src_indices}
+\end_layout
+
+\end_inset
+
+ even without setting it to be
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{True}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_input('x', src_indices=[[0, 10], [7, 4]], 
+\end_layout
+
+\begin_layout Plain Layout
+
+								shape=(2,2))
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Setting the Order of Subsystems in a Group - 
+\begin_inset CommandInset href
+LatexCommand href
+name "Group.set_order(new_order)"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/set_order.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By default, subsystems are executed
+\series bold
+ in the same order that they were added to their parent Group
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Group.set_order(new_order)}
+\end_layout
+
+\end_inset
+
+ where it can be 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list[strs]}
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{tuple(strs)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp, NonlinearRunOnce 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_group import ReportOrderComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# this list will record the execution 
+\end_layout
+
+\begin_layout Plain Layout
+
+# order of our C1, C2, and C3 components 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+order_list = [] 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+model = prob.model 
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver = NonlinearRunOnce()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('indeps', IndepVarComp('x', 1.))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('C1', ReportOrderComp(order_list))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('C2', ReportOrderComp(order_list))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('C3', ReportOrderComp(order_list))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=0)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(['indeps', 'C1', 'C2', 'C3'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# ['indeps', 'C1', 'C2', 'C3']
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(['C1', 'C2', 'C3']) # ['C1', 'C2', 'C3']
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# reset the shared order list 
+\end_layout
+
+\begin_layout Plain Layout
+
+order_list[:] = []
+\end_layout
+
+\begin_layout Plain Layout
+
+# now swap C2 and C1 in the order 
+\end_layout
+
+\begin_layout Plain Layout
+
+model.set_order(['indeps', 'C2', 'C1', 'C3'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# after changing the order, we must call setup again 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model() 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(['C2', 'C1', 'C3'])	# ['C2', 'C1', 'C3']
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Accessing subsystems within a Group
+\end_layout
+
+\begin_layout Standard
+access the 
+\series bold
+attribute
+\series default
+ with the name of the subsystem.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class BranchGroup(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def __init__(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        super(BranchGroup, self).__init__()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        b1 = self.add_subsystem('Branch1', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+        g1 = b1.add_subsystem('G1', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+        g2 = g1.add_subsystem('G2', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+        g2.add_subsystem('comp1', 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+					ExecComp('b=2.0*a', a=3.0, b=6.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        b2 = self.add_subsystem('Branch2', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+        g3 = b2.add_subsystem('G3', Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+        g3.add_subsystem('comp2', 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+					ExecComp('b=3.0*a', a=4.0, b=12.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.core.tests.test_group import BranchGroup
+\end_layout
+
+\begin_layout Plain Layout
+
+p = Problem(model=BranchGroup()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+p.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+c1 = p.model.Branch1.G1.G2.comp1 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(c1.pathname)	# Branch1.G1.G2.comp1
+\end_layout
+
+\begin_layout Plain Layout
+
+c2 = p.model.Branch2.G3.comp2 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(c2.pathname)	# Branch2.G3.comp2
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Parallel Groups - 
+\begin_inset CommandInset href
+LatexCommand href
+name "ParallelGroup()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/parallel_group.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+they will be executed
+\series bold
+ in
+\series default
+ 
+\series bold
+parallel
+\series default
+, assuming that the 
+\series bold
+ParallelGroup
+\series default
+ is given an MPI communicator of sufficient size.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# my_par_model.py
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, IndepVarComp, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ParallelGroup, ExecComp, PETScVector
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+model = prob.model
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('p1', IndepVarComp('x', 1.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('p2', IndepVarComp('x', 1.0))
+\end_layout
+
+\begin_layout Plain Layout
+
+parallel = model.add_subsystem('parallel', ParallelGroup())
+\end_layout
+
+\begin_layout Plain Layout
+
+parallel.add_subsystem('c1', ExecComp(['y=-2.0*x']))
+\end_layout
+
+\begin_layout Plain Layout
+
+parallel.add_subsystem('c2', ExecComp(['y=5.0*x']))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('c3', ExecComp(['y=3.0*x1+7.0*x2']))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect("parallel.c1.y", "c3.x1")
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect("parallel.c2.y", "c3.x2")
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect("p1.x", "parallel.c1.x")
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect("p2.x", "parallel.c2.x")
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(vector_class=PETScVector, check=False, mode='fwd')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=0)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['c3.y'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# (rank 0) [ 29.] 
+\end_layout
+
+\begin_layout Plain Layout
+
+# (rank 1) [ 29.]
+\end_layout
+
+\end_inset
+
+to run it 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mpirun -n 2 python my_par_model.py
+\end_layout
+
+\end_inset
+
+we can set the 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add_subsystem('parallel', ParallelGroup())
+\end_layout
+
+\end_inset
+
+ using the setting as in Figure 
+\begin_inset CommandInset ref
+LatexCommand vref
+reference "fig:add_subsystem()"
+
+\end_inset
+
+If the number of processes is less than the number of subsystems then each
+ subsystem, one at a time starting with the one with the highest 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{proc_weight}
+\end_layout
+
+\end_inset
+
+, is allocated to the least loaded process.
+ An 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+err{exception}
+\end_layout
+
+\end_inset
+
+ will be raised if any of the subsystems in this case have a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{min_procs}
+\end_layout
+
+\end_inset
+
+ value greater than 1.
+\end_layout
+
+\begin_layout Subsection
+Modify Children of a Group with Configure Method - 
+\begin_inset CommandInset href
+LatexCommand href
+name "class Super(Group):"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/configure_method.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup(self)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Add subsystems 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.add_subsystem('comp', ImplSimple())
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Issue Connections 
+\end_layout
+
+\begin_layout Itemize
+Assign linear and nonlinear solvers at group level 
+\end_layout
+
+\begin_layout Itemize
+Change solver settings in group 
+\end_layout
+
+\begin_layout Itemize
+Assign Jacobians at group level 
+\end_layout
+
+\begin_layout Itemize
+Set system execution order
+\end_layout
+
+\begin_layout Standard
+in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{configure(self)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Assign linear and nonlinear solvers to subsystems 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.sub.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+self.sub.linear_solver = ScipyKrylov()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Change solver settings in subsystems 
+\end_layout
+
+\begin_layout Itemize
+Assign Jacobians to subsystems 
+\end_layout
+
+\begin_layout Itemize
+Set execution order in subsystems
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ImplicitComponent, NewtonSolver, ScipyKrylov, NonlinearBlockGS
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class ImplSimple(ImplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('a', val=1.)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('x', val=0.)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def apply_nonlinear(self, inputs, outputs, residuals):
+\end_layout
+
+\begin_layout Plain Layout
+
+        residuals['x'] = np.exp(outputs['x']) -
+\end_layout
+
+\begin_layout Plain Layout
+
+           inputs['a']**2 * outputs['x']**2
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def linearize(self, inputs, outputs, jacobian):
+\end_layout
+
+\begin_layout Plain Layout
+
+        jacobian['x', 'x'] = np.exp(outputs['x']) -
+\end_layout
+
+\begin_layout Plain Layout
+
+           2 * inputs['a']**2 * outputs['x']
+\end_layout
+
+\begin_layout Plain Layout
+
+        jacobian['x', 'a'] = -2 * inputs['a'] *
+\end_layout
+
+\begin_layout Plain Layout
+
+								outputs['x']**2
+\end_layout
+
+\begin_layout Plain Layout
+
+class Sub(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('comp', ImplSimple())
+\end_layout
+
+\begin_layout Plain Layout
+
+        # This will not solve it         
+\end_layout
+
+\begin_layout Plain Layout
+
+		self.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def configure(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        # This will not solve it either.
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class Super(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('sub', Sub())
+\end_layout
+
+\begin_layout Plain Layout
+
+	def configure(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        # This will solve it.
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.sub.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.sub.linear_solver = ScipyKrylov()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+top = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model = Super()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+# This will solve it.
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model.sub.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model.sub.linear_solver = ScipyKrylov()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(isinstance(top.model.sub.nonlinear_solver, NewtonSolver))
+\end_layout
+
+\begin_layout Plain Layout
+
+print(isinstance(top.model.sub.linear_solver, ScipyKrylov))
+\end_layout
+
+\begin_layout Plain Layout
+
+# True
+\end_layout
+
+\begin_layout Plain Layout
+
+# True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Changing Model Setting After Setup - 
+\begin_inset CommandInset href
+LatexCommand href
+name "model.sub.nonlinear_solver = **"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/grouping_components/post_setup_config.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+after 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{prob.setup()}
+\end_layout
+
+\end_inset
+
+ and before 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{run_model}
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{run_driver}
+\end_layout
+
+\end_inset
+
+, allow 
+\end_layout
+
+\begin_layout Itemize
+Set initial conditions for unconnected inputs or states 
+\end_layout
+
+\begin_layout Itemize
+Assign linear and nonlinear solvers 
+\end_layout
+
+\begin_layout Itemize
+Change solver settings 
+\end_layout
+
+\begin_layout Itemize
+Assign Dense or Sparse Jacobians 
+\end_layout
+
+\begin_layout Itemize
+Set execution order 
+\end_layout
+
+\begin_layout Itemize
+Assign case recorders
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ImplicitComponent, NewtonSolver, ScipyKrylov, NonlinearBlockGS
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class ImplSimple(ImplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('a', val=1.)
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('x', val=0.)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def apply_nonlinear(self, inputs, outputs, residuals):
+\end_layout
+
+\begin_layout Plain Layout
+
+        residuals['x'] = np.exp(outputs['x']) -
+\end_layout
+
+\begin_layout Plain Layout
+
+           inputs['a']**2 * outputs['x']**2
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def linearize(self, inputs, outputs, jacobian):
+\end_layout
+
+\begin_layout Plain Layout
+
+        jacobian['x', 'x'] = np.exp(outputs['x']) -
+\end_layout
+
+\begin_layout Plain Layout
+
+           2 * inputs['a']**2 * outputs['x']
+\end_layout
+
+\begin_layout Plain Layout
+
+        jacobian['x', 'a'] = -2 * inputs['a'] *
+\end_layout
+
+\begin_layout Plain Layout
+
+								outputs['x']**2
+\end_layout
+
+\begin_layout Plain Layout
+
+class Sub(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('comp', ImplSimple())
+\end_layout
+
+\begin_layout Plain Layout
+
+        # This will not solve it         
+\end_layout
+
+\begin_layout Plain Layout
+
+		self.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def configure(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        # This will not solve it either.
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+class Super(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('sub', Sub())
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+top = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model = Super()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+# This will solve it.
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model.sub.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+top.model.sub.linear_solver = ScipyKrylov()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(isinstance(top.model.sub.nonlinear_solver, NewtonSolver))
+\end_layout
+
+\begin_layout Plain Layout
+
+print(isinstance(top.model.sub.linear_solver, ScipyKrylov))
+\end_layout
+
+\begin_layout Plain Layout
+
+# True
+\end_layout
+
+\begin_layout Plain Layout
+
+# True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Adding Design Variables, Constraints & Objectives
+\end_layout
+
+\begin_layout Subsection
+Add Design Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "add_sign_var()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/adding_desvars_objs_consts/adding_desvars.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Add an Objective - 
+\begin_inset CommandInset href
+LatexCommand href
+name "add_objective()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/adding_desvars_objs_consts/adding_objectives.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+x_{scaled}=scaler(x+adder)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Add a constraint - 
+\begin_inset CommandInset href
+LatexCommand href
+name "add_constraint()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/adding_desvars_objs_consts/adding_constraints.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Group Design Variables, Constraints, and Objectives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "parallel_deriv_color"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/adding_desvars_objs_consts/grouping_vois.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.add_design_var('y_lgl', lower=-1000.0, 
+\end_layout
+
+\begin_layout Plain Layout
+
+	upper=1000.0, parallel_deriv_color='par_dvs')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Vectorize Derivative Computation - 
+\begin_inset CommandInset href
+LatexCommand href
+name "vectorize_derivs"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/adding_desvars_objs_consts/vectorize_derivs.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.add_design_var('y_lgl', lower=-1000.0, 
+\end_layout
+
+\begin_layout Plain Layout
+
+		upper=1000.0, vectorize_derivs=True)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Running Your Models
+\end_layout
+
+\begin_layout Subsection
+Set and Get Component Variables
+\end_layout
+
+\begin_layout Standard
+You will both set and get the values in the dimensional and unscaled form
+ via the Problem class.
+ If you have promoted both inputs and outputs to the 
+\series bold
+same
+\series default
+ 
+\series bold
+name
+\series default
+, then the 
+\series bold
+output
+\series default
+ 
+\series bold
+takes
+\series default
+ 
+\series bold
+precedence
+\series default
+ and it determines the 
+\series bold
+units
+\series default
+ you should work in.
+\end_layout
+
+\begin_layout Subsubsection
+Outputs and Independent Variables
+\end_layout
+
+\begin_layout Itemize
+promote everything
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob['x'] = 2.75
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['x'])	# [ 2.75]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+instead of promoting everything, then you would access the variables like
+ this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob['px.x'] = 2.75
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['px.x'])	# [ 2.75]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Working with Array Variables
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob['z'] = [1.5, 1.5]
+\end_layout
+
+\begin_layout Plain Layout
+
+# for convenience we convert the list to an array.
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['z'])	# [1.5, 1.5]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Residuals
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+inputs, outputs, residuals = prob.model.get_nonlinear_vectors()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(residuals['y1'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# [ -7.66033903e-10]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Inputs
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+99.9% of the time, you don’t want to work with input variables.
+ Instead you probably want to use the associated output variable.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To set or get the and input variable, you reference it by its absolute path
+ name.
+ The full path name is necessary.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# the output variable, referenced by the promoted name 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['y1'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# the connected input variable, referenced by the absolute path 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['d2.y1'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Setup Your Model - 
+\begin_inset CommandInset href
+LatexCommand href
+name "setup()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/running/setup.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+it is important to note that you
+\series bold
+ can not set or get
+\series default
+ any variable values nor run until after you call 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Run Your Model - 
+\begin_inset CommandInset href
+LatexCommand href
+name "run_model()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/running/run_model.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Run a Driver - 
+\begin_inset CommandInset href
+LatexCommand href
+name "run_driver()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/running/run_driver.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+for optimization
+\end_layout
+
+\begin_layout Section
+Solver
+\end_layout
+
+\begin_layout Subsection
+Solver Options - 
+\begin_inset CommandInset href
+LatexCommand href
+name ".options['option_']"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/controlling_solvers/solver_options.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ nlgbs = model.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+nlgbs.options['maxiter'] = 20 
+\end_layout
+
+\begin_layout Plain Layout
+
+nlgbs.options['atol'] = 1e-6 
+\end_layout
+
+\begin_layout Plain Layout
+
+nlgbs.options['rtol'] = 1e-6
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Display solver convergence info - 
+\begin_inset CommandInset href
+LatexCommand href
+name "iprint = -1 0 1 2"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/controlling_solvers/solver_options.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Solvers can all print out some information about their convergence history.
+\end_layout
+
+\begin_layout Itemize
+= -1: Print nothing
+\end_layout
+
+\begin_layout Itemize
+= 0: Print only errors or convergence failures
+\end_layout
+
+\begin_layout Itemize
+= 1: Print a convergence summary as well as errors and convergence failures
+\end_layout
+
+\begin_layout Itemize
+= 2: Print the residual for every solver iteration
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+newton.options['iprint'] = -1 
+\end_layout
+
+\begin_layout Plain Layout
+
+scipy.options['iprint'] = -1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Control Output in Large Models 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{set_solver_print()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.linear_solver = ScipyKrylov()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver.options['solve_subsystems'] = True
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver.options['max_sub_solves'] = 0 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=-1, type_='LN')
+\end_layout
+
+\begin_layout Plain Layout
+
+# linear solver won't print output
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=2, depth=2) 
+\end_layout
+
+\begin_layout Plain Layout
+
+# sub sub model won't print
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Set Nonlinear and Linear Solvers
+\end_layout
+
+\begin_layout Standard
+Whenever you use a 
+\series bold
+nonlinear
+\series default
+ solver on a Group or Component, if you’re going to be working with 
+\series bold
+analytic derivatives
+\series default
+, you will also 
+\series bold
+need a linear solver.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, NewtonSolver,
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ScipyKrylov, DirectSolver, NonlinearBlockGS, LinearBlockGS 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.test_suite.components.double_sellar import DoubleSellar
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem()
+\end_layout
+
+\begin_layout Plain Layout
+
+model = prob.model = DoubleSellar()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# each SubSellar group converges itself
+\end_layout
+
+\begin_layout Plain Layout
+
+g1 = model.g1
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+g1.linear_solver = DirectSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# used for derivatives
+\end_layout
+
+\begin_layout Plain Layout
+
+g2 = model.g2
+\end_layout
+
+\begin_layout Plain Layout
+
+g2.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+g2.linear_solver = DirectSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# Converge the outer loop with Gauss Seidel,
+\end_layout
+
+\begin_layout Plain Layout
+
+# with a looser tolerance.
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver = NonlinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver.options['rtol'] = 1.0e-5
+\end_layout
+
+\begin_layout Plain Layout
+
+model.linear_solver = ScipyKrylov()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.linear_solver.precon = LinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You can also specify solvers as part of the initialization of a Group
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class DoubleSellar(Group):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def __init__(self, units=None, scaling=None, **kwargs):
+\end_layout
+
+\begin_layout Plain Layout
+
+        super(DoubleSellar, self).__init__(**kwargs)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('g1', SubSellar(units=units, scaling=scaling))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_subsystem('g2', SubSellar(units=units, scaling=scaling))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.connect('g1.y2', 'g2.x')
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.connect('g2.y2', 'g1.x')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Converge the outer loop with Gauss Seidel, with a looser tolerance.
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.linear_solver = DirectSolver()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Derivatives
+\end_layout
+
+\begin_layout Subsection
+Approximate Partial Derivatives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "declare_partials()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/approximating_partials.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+use glob patterns to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{to}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{wrt}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'y*', method='fd')
+\end_layout
+
+\begin_layout Plain Layout
+
+# wild card to match for example y y1 y2 ...
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'x', method='fd')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+For finite difference approximations (
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{method='fd'}
+\end_layout
+
+\end_inset
+
+), we have three (optional) parameters: the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{form}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{step}
+\end_layout
+
+\end_inset
+
+, and the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{step_calc}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'y*', method='fd',
+\end_layout
+
+\begin_layout Plain Layout
+
+				form='backward', step=1e-6)
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'x', method='fd', 
+\end_layout
+
+\begin_layout Plain Layout
+
+				form='central', step=1e-4)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{form}
+\end_layout
+
+\end_inset
+
+ can be 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'forward'}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'backward'}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'central'}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{step}
+\end_layout
+
+\end_inset
+
+ stepsize 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{1e-6}
+\end_layout
+
+\end_inset
+
+ is a good try
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{step_calc}
+\end_layout
+
+\end_inset
+
+ can be 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'abs'}
+\end_layout
+
+\end_inset
+
+ for absolute or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'rel'}
+\end_layout
+
+\end_inset
+
+ for relative.
+ It determines whether the stepsize is 
+\series bold
+absolute
+\series default
+ or a 
+\series bold
+percentage
+\series default
+ 
+\series bold
+of the
+\series default
+ 
+\series bold
+input
+\series default
+ value.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Complex Step, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{method='cs'}
+\end_layout
+
+\end_inset
+
+ as long as all of the calculation in your 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{solve_nonlinear}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{apply_nonlinear}
+\end_layout
+
+\end_inset
+
+ support complex numbers.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials('*', '*', method='cs')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Check Partial Derivatives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "check_partials()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/checking_partials.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+must define 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute_partials(self, inputs, partials)}
+\end_layout
+
+\end_inset
+
+ return a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{dict of dicts of dicts}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{First key}
+\end_layout
+
+\end_inset
+
+ the component name;
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Second key}
+\end_layout
+
+\end_inset
+
+ is the (output, input) tuple of strings;
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Third key}
+\end_layout
+
+\end_inset
+
+ is one of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{['rel error', 'abs error', 'magnitude', 'J_fd', 'J_fwd', 'J_rev'];}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+data = prob.check_partials()
+\end_layout
+
+\begin_layout Plain Layout
+
+x1_error = data['comp']['y', 'x1']['abs error']
+\end_layout
+
+\begin_layout Plain Layout
+
+print(x1_error.forward)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Change Settings for Inputs on a Component
+\end_layout
+
+\begin_layout Standard
+You can change the settings for the approximation schemes that will be used
+ to compare with your component’s derivatives by calling the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{set_check_partial_options}
+\end_layout
+
+\end_inset
+
+ method.
+ 
+\begin_inset CommandInset href
+LatexCommand href
+name "Link"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/checking_partials.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This allows custom 
+\series bold
+tailoring
+\series default
+ of the 
+\series bold
+approximation
+\series default
+ settings on a variable basis.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+comp.set_check_partial_options(wrt='*', step=1e-2)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.check_partials()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For complex step, need to set 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{prob.setup(force_alloc_complex=True)}
+\end_layout
+
+\end_inset
+
+ to utilize Complex Step during a check.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+comp.set_check_partial_options(wrt='*', method='cs')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(force_alloc_complex=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.check_partials()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Change Global Settings
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_partials(step=1e-2)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.check_partials(method='cs')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.check_partials(form='central')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.check_partials(step_calc='rel')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Unit Testing Partial Derivatives -
+\begin_inset CommandInset href
+LatexCommand href
+name " assert_check_partials()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/unit_testing_partials.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{openmdao.utils.assert_utils.assert_check_partials(data, atol=1e-06, rtol=1e-06)
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Raise 
+\series bold
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+err{assertion}
+\end_layout
+
+\end_inset
+
+
+\series default
+ if any entry from the return from check_partials is above a tolerance.
+ After calling 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{check_partials()}
+\end_layout
+
+\end_inset
+
+ on a Component, you can call the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{assert_check_partials()}
+\end_layout
+
+\end_inset
+
+ function with the returned value from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{check_partials()}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+data = prob.check_partials(suppress_output=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+atol = 1.e-6
+\end_layout
+
+\begin_layout Plain Layout
+
+rtol = 1.e-6
+\end_layout
+
+\begin_layout Plain Layout
+
+assert_check_partials(data, atol, rtol)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Sparse Partial Derivatives - 
+\end_layout
+
+\begin_layout Standard
+To use sparse partial derivatives, they must first be declared with the
+ sparsity pattern in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+ using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{declare_partials()}
+\end_layout
+
+\end_inset
+
+ method.
+\end_layout
+
+\begin_layout Enumerate
+specify the sparsity pattern in the 
+\begin_inset Formula $A_{IJ}$
+\end_inset
+
+ format 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{rows=[0, 1, 1, 1], cols=[0, 1, 2, 3]}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class SparsePartialComp(ExplicitComponent):
+\end_layout
+
+\begin_layout Plain Layout
+
+    def setup(self):
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_input('x', shape=(4,))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.add_output('f', shape=(2,))
+\end_layout
+
+\begin_layout Plain Layout
+
+        self.declare_partials(of='f', wrt='x', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			rows=[0, 1, 1, 1], cols=[0, 1, 2, 3])
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    def compute_partials(self, inputs, partials):
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Corresponds to the 
+\end_layout
+
+\begin_layout Plain Layout
+
+		# [(0,0), (1,1), (1,2), (1,3)] entries.
+\end_layout
+
+\begin_layout Plain Layout
+
+        partials['f', 'x'] = [1., 2., 3., 4.] 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+totals = problem.compute_totals(['example.f'], ['input.x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+print(totals['example.f', 'input.x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# [[ 1.
+  0.
+  0.
+  0.]
+\end_layout
+
+\begin_layout Plain Layout
+
+#  [ 0.
+  2.
+  3.
+  4.]]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If 
+\series bold
+only some
+\series default
+ of your jacobian entries change across iterations or if you wish to 
+\series bold
+avoid creating intermediate arrays
+\series default
+, you may update the entries
+\series bold
+ in-place
+\series default
+.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ def compute_partials(self, inputs, partials):
+\end_layout
+
+\begin_layout Plain Layout
+
+        pd = partials['f', 'x']
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Corresponds to the (0, 0) entry
+\end_layout
+
+\begin_layout Plain Layout
+
+        pd[0] = 1.
+\end_layout
+
+\begin_layout Plain Layout
+
+        # (1,1) entry
+\end_layout
+
+\begin_layout Plain Layout
+
+        pd[1] = 2.
+\end_layout
+
+\begin_layout Plain Layout
+
+        # (1, 2) entry
+\end_layout
+
+\begin_layout Plain Layout
+
+        pd[2] = 3.
+\end_layout
+
+\begin_layout Plain Layout
+
+        # (1, 3) entry
+\end_layout
+
+\begin_layout Plain Layout
+
+        pd[3] = 4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If your partial derivative is 
+\series bold
+constant and sparse
+\series default
+, or if you simply wish to
+\series bold
+ provide an initial value
+\series default
+ for the derivative, you can pass in the values using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{val}
+\end_layout
+
+\end_inset
+
+ argument.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials(of='f', wrt='x', rows=[0,1,1,1], 
+\end_layout
+
+\begin_layout Plain Layout
+
+				cols=[0,1,2,3],val=[1.
+ , 2., 3., 4.])
+\end_layout
+
+\begin_layout Plain Layout
+
+import scipy as sp
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials(of='f', wrt='y', 
+\end_layout
+
+\begin_layout Plain Layout
+
+				val=sp.sparse.eye(2, format='csc'))
+\end_layout
+
+\begin_layout Plain Layout
+
+print(totals['example.f', 'input.x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# [[ 1.
+  0.
+  0.
+  0.]
+\end_layout
+
+\begin_layout Plain Layout
+
+#  [ 0.
+  2.
+  3.
+  4.]]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(totals['example.f', 'input.y'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# [[ 1.
+  0.]
+\end_layout
+
+\begin_layout Plain Layout
+
+#  [ 0.
+  1.]]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Declare Partial Derivatives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "declare_partials()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/specifying_partials.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If you know 
+\series bold
+additional
+\series default
+ information about the structure of partial derivatives in your component,
+ say if 
+\series bold
+an output does not depend on a particular input
+\series default
+, you can use the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{declare_partials()}
+\end_layout
+
+\end_inset
+
+(especially if using a sparse 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{AssembledJacobian}
+\end_layout
+
+\end_inset
+
+).
+ Those should be in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+ in the definition of Component.
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+Specifying that a variable does not depend on another.
+ Note that this is not typically required, because by default OpenMDAO assumes
+ that all variables are independent.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'y1', dependent=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Declaring multiple derivatives using glob patterns 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ self.declare_partials('f', 'y*', dependent=False)
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# This matches y1 and y3.
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('g', 'y[13]', 
+\end_layout
+
+\begin_layout Plain Layout
+
+	val=[[1, 0], [1, 0], [0, 1], [0, 1]])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{val}
+\end_layout
+
+\end_inset
+
+ argument to set a constant partial derivative.
+ Note that this is intended for cases when the derivative value is 
+\series bold
+constant
+\series default
+, and hence the derivatives
+\series bold
+ do not ever 
+\series default
+need to be 
+\series bold
+recomputed
+\series default
+ in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute_partials()}
+\end_layout
+
+\end_inset
+
+.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# scalar     
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'x', val=1.)         
+\end_layout
+
+\begin_layout Plain Layout
+
+# dense array
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('f', 'z', val=np.ones((1, 4)))         
+\end_layout
+
+\begin_layout Plain Layout
+
+# y1 y3 Nested list
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('g', 'y[13]', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			val=[[1, 0], [1, 0], [0, 1], [0, 1]])
+\end_layout
+
+\begin_layout Plain Layout
+
+# sparse matrix        
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('g', 'y2', val=[1., 1., 1., 1.], 
+\end_layout
+
+\begin_layout Plain Layout
+
+			cols=[0, 0, 1, 1], rows=[0, 2, 1, 3])         
+\end_layout
+
+\begin_layout Plain Layout
+
+self.declare_partials('g', 'x', 
+\end_layout
+
+\begin_layout Plain Layout
+
+	val=sp.sparse.coo_matrix(((1., 1.), ((0, 3), (0, 0))))) 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Approximate Semi-Total Derivatives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "approx_totals()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/approximating_totals.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+approximate the 
+\series bold
+derivatives for an entire group in one shot.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Group.approx_totals(method='fd', **kwargs)}
+\end_layout
+
+\end_inset
+
+, accept 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'cs'}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+When you call the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{approx_totals}
+\end_layout
+
+\end_inset
+
+ method on a group, OpenMDAO will generate an 
+\series bold
+approximate
+\series default
+ 
+\series bold
+Jacobian
+\series default
+ for the entire group during the linearization step 
+\series bold
+before
+\series default
+ 
+\series bold
+derivatives
+\series default
+ 
+\series bold
+are
+\series default
+ 
+\series bold
+calculated
+\series default
+.
+ When 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{solve_linear}
+\end_layout
+
+\end_inset
+
+ is called from any system that contains this system, the 
+\series bold
+approximated Jacobian
+\series default
+ is used for the derivatives in this system.
+\end_layout
+
+\begin_layout Standard
+The derivatives approximated in this matter are 
+\series bold
+total derivatives of outputs of the group with respect to inputs
+\series default
+.
+ If any components in the group contain 
+\series bold
+implicit
+\series default
+ 
+\series bold
+states
+\series default
+, then you must have an appropriate solver (such as 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{NewtonSolver()}
+\end_layout
+
+\end_inset
+
+) inside the group to solve the 
+\series bold
+implicit
+\series default
+ relationships.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.approx_totals(method='fd', step=1e-7, 
+\end_layout
+
+\begin_layout Plain Layout
+
+	form='central', step_calc='rel') 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Complex Step
+\end_layout
+
+\begin_layout Standard
+constraints:
+\end_layout
+
+\begin_layout Itemize
+All components must support complex calculations in solve_nonlinear
+\end_layout
+
+\begin_layout Itemize
+Solvers like Newton that require gradients are not supported
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.approx_totals(method='cs')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Check Total Derivatives - 
+\begin_inset CommandInset href
+LatexCommand href
+name "check_totals()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/check_total_derivatives.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You should always converge your model 
+\series bold
+before
+\series default
+ calling this method.
+ Use 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{check_partials()}
+\end_layout
+
+\end_inset
+
+ first, because 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{check_totals()}
+\end_layout
+
+\end_inset
+
+ won't tell you anything but there is a problem or not.
+\end_layout
+
+\begin_layout Subsubsection
+Usage
+\end_layout
+
+\begin_layout Enumerate
+manually specify which derivatives to check 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_totals(of=['obj', 'con1'], wrt=['x', 'z'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Check the all the derivatives that the driver will need:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_totals()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Display the results in a compact format:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_totals(compact_print=True)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+check derivatives with complex step and a larger step size.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_totals(method='cs', step=1.0e-1)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Turn off standard output and just view the derivatives in the return:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+totals = prob.check_totals(suppress_output=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+print(totals)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Picking Forward or Reverse Total Derivative Solve - 
+\begin_inset CommandInset href
+LatexCommand href
+name "mode"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/working_with_derivatives/picking_mode.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Analytic total derivatives
+\series default
+ can be calculated in either forward or reverse mode.
+ 
+\end_layout
+
+\begin_layout Standard
+In 
+\series bold
+forward
+\series default
+ mode OpenMDAO computes total derivatives with 
+\series bold
+one linear solve per design variable
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In 
+\series bold
+reverse
+\series default
+ mode it uses 
+\series bold
+one linear solve per response (i.e.
+ objective and constraints)
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+So the choice of forward or reverse is problem dependent.
+ In OpenMDAO, the 
+\series bold
+default
+\series default
+ derivative direction is 
+\series bold
+reverse
+\series default
+.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.setup(check=True, mode='fwd')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=True, mode='rev')
+\end_layout
+
+\end_inset
+
+If you choose a mode that is 
+\series bold
+not
+\series default
+ 
+\series bold
+optimal
+\series default
+ based on the sizes in your problem, you will see a warning like this in
+ the output from your setup call.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+RuntimeWarning: Inefficient choice of derivative mode.
+  
+\end_layout
+
+\begin_layout Plain Layout
+
+You chose 'rev' for a problem with 100 design variables 
+\end_layout
+
+\begin_layout Plain Layout
+
+and 200 response variables (objectives and constraints).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+Building Blocks
+\end_layout
+
+\begin_layout Section
+Components
+\end_layout
+
+\begin_layout Subsection
+MetaModel Component
+\end_layout
+
+\begin_layout Standard
+Model with multiple responses - collection of surrogates - model with a
+ single response.
+\end_layout
+
+\begin_layout Subsubsection
+Example
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+trig:\ x\Longrightarrow\begin{cases}
+\sin(x)\\
+\cos(x)
+\end{cases}
+\]
+
+\end_inset
+
+the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{trig.add_output()}
+\end_layout
+
+\end_inset
+
+ must specify 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{surrogate}
+\end_layout
+
+\end_inset
+
+ type, or specify 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{trig.default_surrogate = FloatKrigingSurrogate()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The first time a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{MetaModel}
+\end_layout
+
+\end_inset
+
+ runs, it will train the surrogates using the training data that has been
+ provided and then it will predict the output values.
+ This 
+\series bold
+training
+\series default
+ 
+\series bold
+step
+\series default
+ 
+\series bold
+only occurs on the first run.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# create a MetaModel, specifying surrogates for the outputs 
+\end_layout
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, MetaModel, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+		FloatKrigingSurrogate
+\end_layout
+
+\begin_layout Plain Layout
+
+trig = MetaModel() 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.add_input('x', 0.) 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.add_output('sin_x', 0., surrogate=FloatKrigingSurrogate()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.add_output('cos_x', 0.)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.default_surrogate = FloatKrigingSurrogate()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# provide training data 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.metadata['train:x'] = np.linspace(0,10,20) 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.metadata['train:sin_x'] = .5*np.sin(trig.metadata['train:x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.metadata['train:cos_x'] = .5*np.cos(trig.metadata['train:x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# add it to a Problem, run and check the predicted values 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('trig', trig) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['trig.x'] = 2.1 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['trig.sin_x'])	# [ 0.43161041]
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['trig.cos_x'])	# [-0.25241563]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The inputs and outputs of a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{MetaModel}
+\end_layout
+
+\end_inset
+
+ 
+\series bold
+are not limited
+\series default
+ to 
+\series bold
+scalar
+\series default
+ values.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# similar to previous example, but processes 3 inputs/outputs at a time
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, MetaModel, FloatKrigingSurrogate
+\end_layout
+
+\begin_layout Plain Layout
+
+size = 3
+\end_layout
+
+\begin_layout Plain Layout
+
+# create a vectorized MetaModel for sine and cosine 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig = MetaModel(vectorize=size,
+\end_layout
+
+\begin_layout Plain Layout
+
+	default_surrogate=FloatKrigingSurrogate())
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.add_input('x', np.zeros(size))
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.add_output('y', np.zeros((size, 2)))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# add it to a Problem 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem('trig', trig) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# provide training data 
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.metadata['train:x'] = np.linspace(0, 10, 20)
+\end_layout
+
+\begin_layout Plain Layout
+
+trig.metadata['train:y'] = np.column_stack((
+\end_layout
+
+\begin_layout Plain Layout
+
+    .5*np.sin(trig.metadata['train:x']),
+\end_layout
+
+\begin_layout Plain Layout
+
+    .5*np.cos(trig.metadata['train:x']) ))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# train the surrogate and check predicted value 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['trig.x'] = np.array([2.1, 3.2, 4.3]) 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model() 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['trig.y'])
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+ExecComp - 
+\begin_inset CommandInset href
+LatexCommand href
+name "list of support"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/components/exec_comp.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+a set of 
+\series bold
+simple
+\series default
+ mathematical 
+\series bold
+relationships
+\series default
+ between 
+\series bold
+inputs and output
+\series default
+s.
+ Functions available for use in ExecComp are limited to the following numpy
+ and scipy functions because it needs to support complex step method.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import numpy as np
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import IndepVarComp,
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Group, Problem, ExecComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model = model = Group()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('p', IndepVarComp('x', np.array([1., 2., 3.])))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.add_subsystem('comp', ExecComp('y=sum(x)', x=np.zeros((3, ))))
+\end_layout
+
+\begin_layout Plain Layout
+
+model.connect('p.x', 'comp.x')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.set_solver_print(level=0)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['comp.y'])	# [ 6.]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+it also support 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{units}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{upper}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{lower}
+\end_layout
+
+\end_inset
+
+...
+\end_layout
+
+\begin_layout Subsection
+ExternalCode Component 
+\end_layout
+
+\begin_layout Standard
+It runs an 
+\series bold
+external
+\series default
+ program in a 
+\series bold
+subprocess
+\series default
+ on your operating system.
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExternalCode}
+\end_layout
+
+\end_inset
+
+ is a 
+\series bold
+utility
+\series default
+ component that makes
+\series bold
+ file wrapping
+\series default
+ easier by taking care of the mundane tasks associated with executing the
+ external application.
+ These includes
+\end_layout
+
+\begin_layout Itemize
+Making the system call using the 
+\series bold
+Subprocess
+\series default
+ module 
+\end_layout
+
+\begin_layout Itemize
+Redirecting stdin, stdout, and stderr to the user’s specification 
+\end_layout
+
+\begin_layout Itemize
+Capturing error codes 
+\end_layout
+
+\begin_layout Itemize
+Defining environment variables 
+\end_layout
+
+\begin_layout Itemize
+Handling timeout and polling 
+\end_layout
+
+\begin_layout Itemize
+Running the code on a remote server if required
+\end_layout
+
+\begin_layout Subsubsection
+ExternalCode Options - 
+\begin_inset CommandInset href
+LatexCommand href
+name "Link"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/components/external_code.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+ExternalCode Example
+\end_layout
+
+\begin_layout Standard
+It takes its inputs from an input file, performs some computations, and
+ then writes the results to an output file.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExternalCode}
+\end_layout
+
+\end_inset
+
+ supports multiple input and output files but for simplicity, this example
+ only uses one of each.
+\end_layout
+
+\begin_layout Subsection
+Balance Component
+\end_layout
+
+\begin_layout Standard
+intended to provide a simple way to implement most implicit equations 
+\series bold
+without
+\series default
+ the need to define your own residuals.
+\begin_inset Formula 
+\[
+f_{mult}(x)f_{lhs}(x)=f_{rhs}(x)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{rhs}(x)$
+\end_inset
+
+ is optional and will default to zero.
+ 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{mult}(x)$
+\end_inset
+
+ is optional and will default to 1.0.
+ 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{lhs}(x)$
+\end_inset
+
+ is a must and should be dependent upon the implicit state variable 
+\begin_inset Formula $x$
+\end_inset
+
+ in the following problem.
+\end_layout
+
+\begin_layout Subsubsection
+Example: Scalar Root Finding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+2x^{2}=4
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{rhs}(x)=4$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{mult}(x)=2$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{rhs}(x)=x^{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from numpy.testing import assert_almost_equal 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+IndepVarComp, ExecComp, NewtonSolver, DirectSolver, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+DenseJacobian, BalanceComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+n = 1
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(model=Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+bal = BalanceComp()
+\end_layout
+
+\begin_layout Plain Layout
+
+bal.add_balance('x')
+\end_layout
+
+\begin_layout Plain Layout
+
+tgt = IndepVarComp(name='y_tgt', val=4)
+\end_layout
+
+\begin_layout Plain Layout
+
+mult_ivc = IndepVarComp(name='mult', val=2.0)
+\end_layout
+
+\begin_layout Plain Layout
+
+exec_comp = ExecComp('y=x**2', x={'value': 1}, y={'value': 1})
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='target', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			subsys=tgt, promotes_outputs=['y_tgt'])
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='mult_comp', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			subsys=mult_ivc, promotes_outputs=['mult'])
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='exec', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			subsys=exec_comp)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='balance', 
+\end_layout
+
+\begin_layout Plain Layout
+
+			subsys=bal)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('y_tgt', 'balance.rhs:x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('mult', 'balance.mult:x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('balance.x', 'exec.x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('exec.y', 'balance.lhs:x')
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.linear_solver = DirectSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver.options['maxiter'] = 100
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver.options['iprint'] = 0
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.jacobian = DenseJacobian()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+# A reasonable initial guess to find the positive root.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['balance.x'] = 1.0
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+print('x = ', prob['balance.x'])
+\end_layout
+
+\begin_layout Plain Layout
+
+# x = [ 1.414]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Example: Vectorized Root Finding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+bx+c=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import numpy as np 
+\end_layout
+
+\begin_layout Plain Layout
+
+from numpy.testing import assert_almost_equal
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.api import Problem, Group, 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ExecComp, NewtonSolver, DirectSolver, DenseJacobian,
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+BalanceComp
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+n = 100
+\end_layout
+
+\begin_layout Plain Layout
+
+prob = Problem(model=Group())
+\end_layout
+
+\begin_layout Plain Layout
+
+exec_comp = ExecComp('y=b*x+c',
+\end_layout
+
+\begin_layout Plain Layout
+
+                     b={'value': np.random.uniform(0.01,100, size=n)},
+\end_layout
+
+\begin_layout Plain Layout
+
+                     c={'value': np.random.rand(n)},
+\end_layout
+
+\begin_layout Plain Layout
+
+                     x={'value': np.zeros(n)},
+\end_layout
+
+\begin_layout Plain Layout
+
+                     y={'value': np.ones(n)})
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='exec', 
+\end_layout
+
+\begin_layout Plain Layout
+
+					subsys=exec_comp)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.add_subsystem(name='balance', 
+\end_layout
+
+\begin_layout Plain Layout
+
+					subsys=BalanceComp('x', val=np.ones(n)))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('balance.x', 'exec.x') 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.connect('exec.y', 'balance.lhs:x')
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.linear_solver = DirectSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver.options['maxiter'] = 100
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.nonlinear_solver.options['iprint'] = 0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.model.jacobian = DenseJacobian()
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.setup(check=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob['balance.x'] = np.random.rand(n)
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.run_model()
+\end_layout
+
+\begin_layout Plain Layout
+
+b = prob['exec.b'] c = prob['exec.c']
+\end_layout
+
+\begin_layout Plain Layout
+
+print(prob['balance.x'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Linear System Component Nothing!
+\end_layout
+
+\begin_layout Section
+Drivers
+\end_layout
+
+\begin_layout Subsection
+ScipyOptimizer Driver - 
+\begin_inset CommandInset href
+LatexCommand href
+name "ScipyOptimizer() "
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/drivers/scipy_optimizer.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ScipyOptimizer}
+\end_layout
+
+\end_inset
+
+ driver wraps the optimizers in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{scipy.optimize.minimize}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ prob.driver = ScipyOptimizer() 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver.options['optimizer'] = 'SLSQP' 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver.options['tol'] = 1e-9 
+\end_layout
+
+\begin_layout Plain Layout
+
+prob.driver.options['disp'] = True 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+ScipyOptimizer Options
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{disp=True}
+\end_layout
+
+\end_inset
+
+ Set to False to prevent printing of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{Scipy}
+\end_layout
+
+\end_inset
+
+ convergence messages
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{maxiter=200}
+\end_layout
+
+\end_inset
+
+ Maximum number of iterations.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{optimizer='SLSQP'}
+\end_layout
+
+\end_inset
+
+ Name of optimizer to use.
+ Alternative optimizer [‘Nelder-Mead’, ‘Powell’, ‘CG’, ‘BFGS’, ‘Newton-CG’,
+ ‘L-BFGS-B’, ‘TNC’, ‘COBYLA’, ‘SLSQP’]
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{tol=1e-06}
+\end_layout
+
+\end_inset
+
+ Tolerance for termination.
+ For detailed control, use solver-specific options.
+\end_layout
+
+\begin_layout Subsubsection
+ScipyOptimizer Option Examples
+\end_layout
+
+\begin_layout Standard
+the optimizers that you are most likely to use are 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{"COBYLA"}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{"SLSQP"}
+\end_layout
+
+\end_inset
+
+, as these are the 
+\series bold
+only
+\series default
+ 
+\series bold
+ones
+\series default
+ that 
+\series bold
+support
+\series default
+ 
+\series bold
+constraints
+\series default
+.
+ Only 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'SLSQP'}
+\end_layout
+
+\end_inset
+
+ supports 
+\series bold
+equality
+\series default
+ 
+\series bold
+constraints
+\series default
+, and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'SLSQP'}
+\end_layout
+
+\end_inset
+
+ also uses gradients provide by OpenMDAO while 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{'COBYLA'}
+\end_layout
+
+\end_inset
+
+ is 
+\series bold
+gradient-free
+\series default
+.
+\end_layout
+
+\begin_layout Subsection
+pyoptsparse Driver - 
+\begin_inset CommandInset href
+LatexCommand href
+name "Link"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/drivers/pyoptsparse_driver.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{pyOptSparseDriver}
+\end_layout
+
+\end_inset
+
+ wraps the optimizer package 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{pyOptSparse}
+\end_layout
+
+\end_inset
+
+, which provides a common interface for 11 optimizers, some of which are
+ included in the package (e.g., 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{SLSQP}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{NSGA2}
+\end_layout
+
+\end_inset
+
+), and some of which are commercial products that must be obtained from
+ their respective authors (e.g.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{SNOPT}
+\end_layout
+
+\end_inset
+
+).
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{pyOptSparse}
+\end_layout
+
+\end_inset
+
+ package is based off of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{pyOpt}
+\end_layout
+
+\end_inset
+
+, but it adds support for sparse specification of constraint jacobians.
+ Most of the sparsity features are only applicable when using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{SNOPT}
+\end_layout
+
+\end_inset
+
+ optimizer.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+The pyOptSparse package does not come included with the OpenMDAO installation.
+ It is a separate optional package that can be obtained from 
+\begin_inset CommandInset href
+LatexCommand href
+name "mdolab"
+target "https://bitbucket.org/mdolab/pyoptsparse"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Solvers
+\end_layout
+
+\begin_layout Subsection
+Nonlinear Solvers
+\end_layout
+
+\begin_layout Subsubsection
+NonlinearBlockGS - 
+\begin_inset CommandInset href
+LatexCommand href
+name "NonlinearBlockGS()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/nonlinear/nonlinear_block_gs.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Block Gauss Seidel 
+\series default
+(also known as
+\series bold
+ Fixed Point Iteration
+\series default
+) to the components and subsystems in the system.
+ Constraints:
+\end_layout
+
+\begin_layout Itemize
+System (or subsystem) 
+\series bold
+contains
+\series default
+ a cycle, though subsystems may.
+ 
+\end_layout
+
+\begin_layout Itemize
+System 
+\series bold
+does
+\series default
+ 
+\series bold
+not
+\series default
+ contain any implicit states, though subsystems may.
+\end_layout
+
+\begin_layout Subsubsection
+NonlinearBlockJac - 
+\begin_inset CommandInset href
+LatexCommand href
+name "NonlinearBlockJac()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/nonlinear/nonlinear_block_jac.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+a nonlinear solver that uses the block Jacobi method to solve the system.
+ The same constraints
+\end_layout
+
+\begin_layout Itemize
+System (or subsystem) 
+\series bold
+contains
+\series default
+ a cycle, though subsystems may.
+ 
+\end_layout
+
+\begin_layout Itemize
+System 
+\series bold
+does
+\series default
+ 
+\series bold
+not
+\series default
+ contain any implicit states, though subsystems may.
+\end_layout
+
+\begin_layout Subsubsection
+NonlinearRunOnce - 
+\begin_inset CommandInset href
+LatexCommand href
+name "onlinearRunOnce()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/nonlinear/nonlinear_runonce.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The simplest solver in OpenMDAO is the NonlinearRunOnce solver, which executes
+ the system’s components or subsystems sequentially.
+ No iteration is performed by this solver.
+ Constraints
+\end_layout
+
+\begin_layout Itemize
+System 
+\series bold
+does
+\series default
+ 
+\series bold
+not
+\series default
+ contain a cycle, though subsystems may.
+ 
+\end_layout
+
+\begin_layout Itemize
+System 
+\series bold
+does
+\series default
+ 
+\series bold
+not
+\series default
+ contain any implicit states, though subsystems may.
+\end_layout
+
+\begin_layout Subsubsection
+NewtonSolver - 
+\begin_inset CommandInset href
+LatexCommand href
+name "NewtonSolver()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/nonlinear/newton.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+implements Newton’s method to solve the system that contains it.
+ This is the most general solver in OpenMDAO in that it can solve any topology
+ including cyclic connections and implicit states in the system or subsystems.
+ Newton’s method 
+\series bold
+requires derivatives
+\series default
+, so a 
+\series bold
+linear
+\series default
+ 
+\series bold
+solver
+\series default
+ can also be specified.
+ By default, the NewtonSolver uses the linear solver that is slotted in
+ the containing system.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+model.linear_solver = LinearBlockGS()
+\end_layout
+
+\begin_layout Plain Layout
+
+model.nonlinear_solver = NewtonSolver()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Linear Solvers
+\end_layout
+
+\begin_layout Subsubsection
+LinearBlockGS - 
+\begin_inset CommandInset href
+LatexCommand href
+name "LinearBlockGS()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/linear_block_gs.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Block Gauss Seidel
+\series default
+ to solve the linear system.
+ The LinearBlockGS solver iterates until the linear residual is below a
+ tolerance, or the maximum number of iterations has been exceeded.
+ It is generally usable for any system topology, and can handle cycles and
+ implicit states alike.
+ Note that systems 
+\series bold
+without
+\series default
+ 
+\series bold
+cycles
+\series default
+ or 
+\series bold
+implicit
+\series default
+ 
+\series bold
+states
+\series default
+ will converge in 
+\series bold
+one
+\series default
+ iteration of Block Gauss Seidel.
+\end_layout
+
+\begin_layout Subsubsection
+LinearBlockJac- 
+\begin_inset CommandInset href
+LatexCommand href
+name "LinearBlockJac()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/linear_block_jac.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Block
+\series default
+ 
+\series bold
+Jacobi
+\series default
+ method to solve the linear system.
+ The method is similar to that used by the LinearBlockGS solver, 
+\series bold
+except
+\series default
+ that it 
+\series bold
+propagates
+\series default
+ the derivatives from outputs to inputs 
+\series bold
+only
+\series default
+ 
+\series bold
+once
+\series default
+ 
+\series bold
+per
+\series default
+ 
+\series bold
+iteration
+\series default
+.
+\end_layout
+
+\begin_layout Subsubsection
+LinearRunOnce - 
+\begin_inset CommandInset href
+LatexCommand href
+name "LinearRunOnce()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/linear_runonce.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Simplest liner solver, sequentially calls apply_linear and solve_linear
+ once on each subsystem.
+ It is directly analogous to applying a single pass of the chain rule to
+ the whole system without any iteration at the top level.
+ Constraints
+\end_layout
+
+\begin_layout Itemize
+System does not contain a cycle, though subsystems may.
+ 
+\end_layout
+
+\begin_layout Itemize
+System does not contain any implicit states, though subsystems may.
+\end_layout
+
+\begin_layout Subsubsection
+DirectSolver - 
+\begin_inset CommandInset href
+LatexCommand href
+name "DirectSolver()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/direct_solver.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+a linear solver that assembles the system Jacobian and solves the linear
+ system with 
+\series bold
+LU
+\series default
+ 
+\series bold
+factorization
+\series default
+ and 
+\series bold
+back
+\series default
+ 
+\series bold
+substitution
+\series default
+.
+ It can handle 
+\series bold
+any
+\series default
+ 
+\series bold
+system
+\series default
+ 
+\series bold
+topology
+\series default
+.
+ Since it assembles a global Jacobian for all of its subsystems, any linear
+ solver that is assigned in any of its subsystems does not participate in
+ this calculation.
+\end_layout
+
+\begin_layout Subsubsection
+PETScKrylov - 
+\begin_inset CommandInset href
+LatexCommand href
+name "PETScKrylov()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/petsc_ksp.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+an iterative linear solver that wraps the linear solution methods found
+ in 
+\series bold
+PETSc
+\series default
+ via 
+\series bold
+petsc4py
+\series default
+.
+ The default method is “
+\series bold
+fgmres
+\series default
+”, or the Flexible Generalized Minimal RESidual method, though you choose
+ any of the other methods in 
+\series bold
+PETSc
+\series default
+.
+ This linear solver is capable of handling any system topology very effectively.
+ It also solves all subsystems below it in the hierarchy, so assigning different
+ solvers to subsystems will 
+\series bold
+have
+\series default
+ 
+\series bold
+no
+\series default
+ 
+\series bold
+effect
+\series default
+ on the solution at this level.
+ 
+\end_layout
+
+\begin_layout Standard
+This solver works under 
+\series bold
+MPI
+\series default
+, so it is a good alternative to 
+\series bold
+ScipyKrylov
+\series default
+.
+ This solver is also 
+\series bold
+re-entrant
+\series default
+, so there are 
+\series bold
+no
+\series default
+ 
+\series bold
+problems
+\series default
+ if it is 
+\series bold
+nested
+\series default
+ during preconditioning.
+\end_layout
+
+\begin_layout Subsubsection
+ScipyKrylov - 
+\begin_inset CommandInset href
+LatexCommand href
+name "ScipyKrylov()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/scipy_iter_solver.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+an iterative linear solver that wraps the methods found in scipy.sparse.linalg.
+ The default method is “
+\series bold
+gmres
+\series default
+”, or the 
+\series bold
+Generalized
+\series default
+ 
+\series bold
+Minimal
+\series default
+ 
+\series bold
+RESidual
+\series default
+ 
+\series bold
+method
+\series default
+.
+ Support for other scipy.sparse.linalg solvers will be added over time.
+ This linear solver is capable of handling any system topology very effectively.
+ It also solves all subsystems below it in the hierarchy, so assigning different
+ solvers to subsystems will have no effect on the solution at this level.
+\end_layout
+
+\begin_layout Standard
+This is a serial solver, so it should 
+\series bold
+never be used under MPI
+\series default
+; use PETScKrylov instead.
+\end_layout
+
+\begin_layout Subsubsection
+LinearUserDefined - 
+\begin_inset CommandInset href
+LatexCommand href
+name "LinearUserDefined(solve_function=self.mysolve)"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/linear/linear_user_defined.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Linesearch/Backtracking
+\end_layout
+
+\begin_layout Standard
+Backtracking line searches are subsolvers that can be specified in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{line_search}
+\end_layout
+
+\end_inset
+
+ attribute of a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{NewtonSolver}
+\end_layout
+
+\end_inset
+
+ and are used to 
+\series bold
+pull
+\series default
+ 
+\series bold
+back
+\series default
+ to a reasonable point when a Newton step goes to far.
+ This can occur 
+\end_layout
+
+\begin_layout Itemize
+when a step causes output variables to exceed their specified lower and
+ upper bounds
+\end_layout
+
+\begin_layout Itemize
+in more complicated problems where a full Newton step happens to take you
+ well past the nonlinear solution
+\end_layout
+
+\begin_layout Itemize
+an area where the residual norm is worse than the initial point.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Armijo-Goldstein - 
+\begin_inset CommandInset href
+LatexCommand href
+name ".linesearch "
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/backtracking/armijo_goldstein.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ArmijoGoldsteinLS}
+\end_layout
+
+\end_inset
+
+ linesearch Checks 
+\series bold
+bounds
+\series default
+ and backtracks to a point that satisfies them.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Bounds Enforce - 
+\begin_inset CommandInset href
+LatexCommand href
+name "BoundsEnforceLS()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/building_blocks/solvers/backtracking/bounds_enforce.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{BoundsEnforceLS}
+\end_layout
+
+\end_inset
+
+ linesearch only backtracks until variables that 
+\series bold
+violate
+\series default
+ their 
+\series bold
+upper
+\series default
+ and 
+\series bold
+lower
+\series default
+ 
+\series bold
+bounds
+\series default
+.
+\end_layout
+
+\begin_layout Part
+Working With Your Models
+\end_layout
+
+\begin_layout Section
+Recording Your Data
+\end_layout
+
+\begin_layout Subsection
+Recording Data in OpenMDAO - 
+\begin_inset CommandInset href
+LatexCommand href
+name "SqliteRecorder()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/recording/basic_recording.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In OpenMDAO, you can instantiate 
+\series bold
+recorder
+\series default
+ 
+\series bold
+objects
+\series default
+ and 
+\series bold
+attach
+\series default
+ them to the 
+\series bold
+System
+\series default
+, 
+\series bold
+Driver
+\series default
+ or 
+\series bold
+Solver
+\series default
+ 
+\series bold
+instance
+\series default
+(s) of your choice.
+\end_layout
+
+\begin_layout Subsubsection
+Instantiating a Recorder
+\end_layout
+
+\begin_layout Standard
+Instantiating a recorder is easy.
+ Simply give it a name, choose which type of recorder you want (currently
+ 
+\series bold
+only
+\series default
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{SqliteRecorder}
+\end_layout
+
+\end_inset
+
+ exists), and name the output file that you would like to write to.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.my_recorder = SqliteRecorder("filename")
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Setting Recording Options
+\end_layout
+
+\begin_layout Standard
+Option affects 
+\series bold
+the
+\series default
+ 
+\series bold
+amount
+\series default
+ 
+\series bold
+of
+\series default
+ 
+\series bold
+information
+\series default
+ retained by the recorders.
+ These options are 
+\series bold
+associated
+\series default
+ with the System, Driver or Solver that is being recorded.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.driver.recording_options['record_desvars'] = True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+How To Attach a Recorder to an Object - add_recorder()
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Must wait once 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup}
+\end_layout
+
+\end_inset
+
+ is finished
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.prob.driver.add_recorder(self.my_recorder)
+\end_layout
+
+\end_inset
+
+
+\series default
+A recorder can be attached to more than one object.
+ Also, more than one recorder can be attached to an object.
+\end_layout
+
+\begin_layout Subsubsection
+A More Comprehensive Example
+\end_layout
+
+\begin_layout Subsection
+Working with Recorded Data - 
+\begin_inset CommandInset href
+LatexCommand href
+name "CaseReader"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/recording/case_reading.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.recorders.case_reader import CaseReader
+\end_layout
+
+\begin_layout Plain Layout
+
+cr = CaseReader(case_recorder_filename)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+the case recorder file could contain any of the following:
+\end_layout
+
+\begin_layout Enumerate
+Driver metadata 
+\end_layout
+
+\begin_layout Enumerate
+System metadata 
+\end_layout
+
+\begin_layout Enumerate
+Solver metadata 
+\end_layout
+
+\begin_layout Enumerate
+Driver iterations 
+\end_layout
+
+\begin_layout Enumerate
+System iterations 
+\end_layout
+
+\begin_layout Enumerate
+Solver iterations
+\end_layout
+
+\begin_layout Itemize
+Assume that a recorder was attached to the Driver for the Problem.
+ Then, to find out how many cases were recorded: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+print('Number of driver cases recorded =', cr.driver_cases.num_cases )
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list_cases}
+\end_layout
+
+\end_inset
+
+: You can get a list of the case IDs using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list_cases}
+\end_layout
+
+\end_inset
+
+ method: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+case_keys = cr.driver_cases.list_cases() 
+\end_layout
+
+\begin_layout Plain Layout
+
+for case_key in case_keys:
+\end_layout
+
+\begin_layout Plain Layout
+
+    print('Case:', case_key)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{get_case()}
+\end_layout
+
+\end_inset
+
+, support 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{integer}
+\end_layout
+
+\end_inset
+
+ the argument is an index into the cases.
+ Negative numbers can be used.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{string}
+\end_layout
+
+\end_inset
+
+ the argument is one of the case keys
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+For example, in the common situation where the user wants to see the 
+\series bold
+last
+\series default
+ 
+\series bold
+case
+\series default
+, they can do
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+last_case = cr.driver_cases.get_case(-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+print('Last value of pz.z =', last_case.desvars['pz.z'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Or, if the case key is known:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+seventh_slsqp_iteration_case = 
+\end_layout
+
+\begin_layout Plain Layout
+
+cr.driver_cases.get_case('rank0:SLSQP|6') 
+\end_layout
+
+\begin_layout Plain Layout
+
+print('Value of pz.z after 7th iteration of SLSQP =',
+\end_layout
+
+\begin_layout Plain Layout
+
+seventh_slsqp_iteration_case.desvars['pz.z'])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Debug
+\end_layout
+
+\begin_layout Subsection
+Listing Variables - 
+\begin_inset CommandInset href
+LatexCommand href
+name "list_inputs()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/debugging/listing_variables.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list_inputs()}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list_outputs()}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list_residuals()}
+\end_layout
+
+\end_inset
+
+ display all the outputs in alphabetical order with their values and their
+ residual values.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.list_inputs()
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.list_outputs()
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.list_residuals()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{implicit=False}
+\end_layout
+
+\end_inset
+
+ to list only 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{explicit}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.list_outputs(implicit=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{explicit=False}
+\end_layout
+
+\end_inset
+
+ to list only 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{implicit
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.model.list_outputs(explicit=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+avoid stdout 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{out_stream=None}
+\end_layout
+
+\end_inset
+
+ store the information in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{list}
+\end_layout
+
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+inputs = prob.model.list_inputs(out_stream=None) 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(sorted(inputs))
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{values=False}
+\end_layout
+
+\end_inset
+
+ get names only 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+inputs = prob.model.list_inputs(values=False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Profiling for Performance
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# for performance profiling 
+\end_layout
+
+\begin_layout Plain Layout
+
+from openmdao.devtools import iprofile as tool 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# OR for memory profiling 
+\end_layout
+
+\begin_layout Plain Layout
+
+# from openmdao.devtools import iprof_mem as tool 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# OR for call tracing 
+\end_layout
+
+\begin_layout Plain Layout
+
+# from openmdao.devtools import itrace as tool 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# First, make sure that the classes I use to 
+\end_layout
+
+\begin_layout Plain Layout
+
+# define my method set exist in this namespace.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+from mystuff import MyClass, MyOtherClass
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# Let's say I only want to track methods with 
+\end_layout
+
+\begin_layout Plain Layout
+
+# 'foo' or 'bar' in the name that belong to 
+\end_layout
+
+\begin_layout Plain Layout
+
+# MyClass and ones with 'baz' in the name 
+\end_layout
+
+\begin_layout Plain Layout
+
+# that belong to either MyClass or MyOtherClass.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# I use the following glob patterns and tuples of classes 
+\end_layout
+
+\begin_layout Plain Layout
+
+# to specify this.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+methods = [
+\end_layout
+
+\begin_layout Plain Layout
+
+    ('*foo*', (MyClass,)),
+\end_layout
+
+\begin_layout Plain Layout
+
+    ('*bar*', (MyClass,)),
+\end_layout
+
+\begin_layout Plain Layout
+
+    ('*baz*', (MyClass, MyOtherClass)) ]
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# set up the tool using my custom method set 
+\end_layout
+
+\begin_layout Plain Layout
+
+tool.setup(methods=methods)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+tool.start()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# run the code I want to profile/trace...
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+tool.stop()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# do some other stuff that I don't want to profile/trace...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Instance-based Profiling - 
+\begin_inset CommandInset href
+LatexCommand href
+name "iprofview"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/profiling/inst_profile.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+because the OpenMDAO profiler lets you view the profiled functions grouped
+ by the specific 
+\series bold
+problem, system, group, driver
+\series default
+, or 
+\series bold
+solver
+\series default
+ that called them, it can provide insight into which parts of your model
+ are more expensive, even when different parts of your model use many of
+ the same underlying functions.
+ Instance-based profiling by default will record information for all calls
+ to any of the main OpenMDAO classes or their descendants, for example,
+ 
+\series bold
+System
+\series default
+, 
+\series bold
+Problem
+\series default
+, 
+\series bold
+Solver
+\series default
+, 
+\series bold
+Driver
+\series default
+, 
+\series bold
+Matrix
+\series default
+ and 
+\series bold
+Jacobian
+\series default
+.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprofview}
+\end_layout
+
+\end_inset
+
+ This will collect the profiling data, start a web server, and pop up an
+ icicle viewer in a web browser.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iprofview <your_python_script_here>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{-p 8801}
+\end_layout
+
+\end_inset
+
+ set port
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{-t "title_.py"}
+\end_layout
+
+\end_inset
+
+ set title
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{-h}
+\end_layout
+
+\end_inset
+
+ documentation
+\end_layout
+
+\begin_layout Itemize
+If there are gaps below a parent block, that gap represents the time exclusive
+ to the parent or time taken up by functions called by the parent that are
+ not being profiled.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iproftotals}
+\end_layout
+
+\end_inset
+
+ see the timing totals for each method
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iproftotals <your_python_script_here>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Also note that the function names are a 
+\series bold
+combination
+\series default
+ of the OpenMDAO 
+\series bold
+pathname
+\series default
+ (when available) 
+\series bold
+plus
+\series default
+ the 
+\series bold
+function
+\series default
+ 
+\series bold
+name
+\series default
+ qualified by the owning class, or the class name followed by an instance
+ id plus the function name.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+more control 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+from openmdao.devtools import iprofile
+\end_layout
+
+\begin_layout Plain Layout
+
+# we'll just use defaults here, but we could 
+\end_layout
+
+\begin_layout Plain Layout
+
+# change the methods to profile in the call to setup() 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+iprofile.setup() 
+\end_layout
+
+\begin_layout Plain Layout
+
+iprofile.start()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# define my model and run it...
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+iprofile.stop()
+\end_layout
+
+\begin_layout Plain Layout
+
+# do some other stuff that I don't want to profile...
+\end_layout
+
+\end_inset
+
+you should see a new file called 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprof.0}
+\end_layout
+
+\end_inset
+
+ in your current directory.
+ If you happen to have activated profiling for an MPI run, then you’ll have
+ a copy of that file for each MPI process, so 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprof.0}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprof.1}
+\end_layout
+
+\end_inset
+
+, etc.
+\end_layout
+
+\begin_layout Itemize
+run 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprofview}
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iproftotals}
+\end_layout
+
+\end_inset
+
+ directly on the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{iprof.*}
+\end_layout
+
+\end_inset
+
+ data file(s).
+\end_layout
+
+\begin_layout Subsection
+Memory profiling - 
+\begin_inset CommandInset href
+LatexCommand href
+name "iprofmem"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/profiling/inst_mem_profile.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+obtain an estimate of the memory usage of method calls for a specified set
+ of functions.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iprofmem <your_python_script_here>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The first column contains the 
+\series bold
+sum
+\series default
+ of the 
+\series bold
+changes
+\series default
+ in 
+\series bold
+memory
+\series default
+ used for each call to a given function.
+ The second column lists the number of calls to that function that 
+\series bold
+increased
+\series default
+ 
+\series bold
+memory
+\series default
+ 
+\series bold
+usage
+\series default
+.
+ The third column is the file, line number, and name of the function.
+\end_layout
+
+\begin_layout Subsection
+Instance-based Call Tracing - 
+\begin_inset CommandInset href
+LatexCommand href
+name "icalltrace"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/working_with_models/profiling/inst_call_tracing.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+print a trace of each instance method call.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+icalltrace <your_python_script_here>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+For more verbose output, which includes values of function locals and return
+ values, as well as the number of times a function has been called,
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+icalltrace -v <your_python_script_here>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Working with analytic derivatives
+\end_layout
+
+\begin_layout Subsection
+Define partial derivatives on explicit components -
+\begin_inset CommandInset href
+LatexCommand href
+name " declear_partials() compute_patials()"
+target "http://openmdao.org/twodocs/versions/latest/advanced_guide/derivs/partial_derivs_explicit.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The framework uses these 
+\series bold
+partial
+\series default
+ 
+\series bold
+derivatives
+\series default
+ in order to 
+\series bold
+compute
+\series default
+ 
+\series bold
+the
+\series default
+ 
+\series bold
+total
+\series default
+ 
+\series bold
+derivatives
+\series default
+ across your whole model.
+ For any 
+\series bold
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ExplicitComponent}
+\end_layout
+
+\end_inset
+
+
+\series default
+ you are going to provide 
+\series bold
+derivatives
+\series default
+ 
+\series bold
+of
+\series default
+ 
+\series bold
+the
+\series default
+ 
+\series bold
+outputs
+\series default
+ 
+\series bold
+with
+\series default
+ 
+\series bold
+respect
+\series default
+ 
+\series bold
+to
+\series default
+ 
+\series bold
+the
+\series default
+ 
+\series bold
+inputs
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+declare the partial derivatives via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{declare_partials()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+This is always done inside the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{setup()}
+\end_layout
+
+\end_inset
+
+ method.
+\end_layout
+
+\begin_layout Enumerate
+You could have declared all the partials in just one line as follows
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+self.declare_partials('*', '*')
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+After you declare the non-zero partial derivatives, you need to implement
+ the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute_partials()}
+\end_layout
+
+\end_inset
+
+ method to perform the actual derivative computations.
+ 
+\end_layout
+
+\begin_layout Enumerate
+all the non-declared 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{['output_','input_']}
+\end_layout
+
+\end_inset
+
+ are assumed to be 0
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+specify their values via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{compute_partials()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Matrix-free way - 
+\begin_inset CommandInset href
+LatexCommand href
+name "compute_jacvec_product()"
+target "http://openmdao.org/twodocs/versions/latest/feature_reference/core_features/defining_components/explicitcomp.html#comp-type-2-explicitcomp"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+check_partials
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+prob.check_partials(compact_print=True)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Defining Partial Derivatives on Implicit Components
+\end_layout
+
+\begin_layout Standard
+For ImplicitComponent instances you will provide 
+\series bold
+partial-derivatives
+\series default
+ 
+\series bold
+of
+\series default
+ 
+\series bold
+residuals
+\series default
+ 
+\series bold
+with
+\series default
+ 
+\series bold
+respect
+\series default
+ 
+\series bold
+to
+\series default
+ 
+\series bold
+inputs
+\series default
+ 
+\series bold
+and
+\series default
+ 
+\series bold
+outputs
+\series default
+.
+\end_layout
+
+\begin_layout Enumerate
+declare the partial-derivatives via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{declare_partials()}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+specify their values via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{linearize}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Residual values are computed in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{apply_nonlinear}
+\end_layout
+
+\end_inset
+
+ method
+\end_layout
+
+\begin_layout Enumerate
+if 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{ImplicitComponent}
+\end_layout
+
+\end_inset
+
+ defines a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{solve_nonlinear()}
+\end_layout
+
+\end_inset
+
+ method, then you will still provide derivatives of the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttt{apply_nonlinear}
+\end_layout
+
+\end_inset
+
+ method.
+\end_layout
+
+\end_body
+\end_document
