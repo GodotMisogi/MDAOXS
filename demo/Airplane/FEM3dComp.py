@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 from numpy.linalg import det as det
 from openmdao.api import ImplicitComponent
-
+from scipy.sparse.linalg import gmres as gmres_solve
 
 class FEM3dComp(ImplicitComponent):
 
@@ -92,21 +92,15 @@ class FEM3dComp(ImplicitComponent):
             """
             B and V are dependent on the element_ID
             """
-            V,B = self._VandB(mesh,element_ID)
+            V,B = self.__VandB(mesh,element_ID)
             """
             k: local stiffness matrix of element_on
             """
             k = V * np.transpose(B) * D * B
-            K = self._K(K, k, element_ID)
+            K = self.__K(K, k, element_ID)
 
-    def compute(self, inputs, outputs):
-        num_elements = self.metadata['num_elements']
 
-        outputs['K_local'] = 0
-        for ind in range(num_elements):
-            outputs['K_local'][ind, :, :] = self.mtx[ind, :, :, ind] * inputs['I'][ind]
-
-    def _VandB(self, mesh, element_ID):
+    def __VandB(self, mesh, element_ID):
         """
         compute the volume of the linear Tetrahedron Elements
         :param element_ID:
@@ -185,7 +179,7 @@ class FEM3dComp(ImplicitComponent):
         B = np.hstack([B1, B2, B3, B4]) / (6 * V)
         return V, B
 
-    def _K(self, K, k, mesh, element_id):
+    def __K(self, K, k, mesh, element_id):
         i = mesh[element_id, 0, 3]
         j = mesh[element_id, 1, 3]
         m = mesh[element_id, 2, 3]
