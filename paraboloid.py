@@ -27,6 +27,7 @@ class Paraboloid(ExplicitComponent):
         y = inputs['y']
         outputs['f_xy'] = (x-3.0)**2 + x*y + (y+4.0)**2 - 3.0
 
+
 if __name__ == "__main__":
     from openmdao.core.problem import Problem
     from openmdao.core.group import Group
