@@ -10,4 +10,3 @@
 """
 Introduction
 """
-import test.ExplicitComp
