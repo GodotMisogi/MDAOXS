@@ -80,11 +80,8 @@ def _VandB(mesh, element_ID):
     B = np.hstack([B1, B2, B3, B4]) / (6 * V)
     return V, B
 
-def _K(K, k, mesh, element_id):
-    i = mesh[element_id, 0, 3]+1
-    j = mesh[element_id, 1, 3]+1
-    m = mesh[element_id, 2, 3]+1
-    n = mesh[element_id, 3, 3]+1
+def _K(K, k, i,j,m,n, element_id):
+
 
     K[3 * i - 2 - 1, 3 * i - 2 - 1] = K[3 * i - 2 - 1, 3 * i - 2 - 1] + k[1 - 1, 1 - 1]
     K[3 * i - 2 - 1, 3 * i - 1 - 1] = K[3 * i - 2 - 1, 3 * i - 1 - 1] + k[1 - 1, 2 - 1]
@@ -270,8 +267,12 @@ for element_ID in range(num_elements):
     """
     k: local stiffness matrix of element_on
     """
+    i = np_mesh[element_ID, 0, 3] + 1
+    j = np_mesh[element_ID, 1, 3] + 1
+    m = np_mesh[element_ID, 2, 3] + 1
+    n = np_mesh[element_ID, 3, 3] + 1
     k = np.matmul(np.matmul(V * np.transpose(B),D), B)
-    _K(K, k, np_mesh, element_ID)
+    _K(K, k, i,j,m,n, element_ID)
 
 """
 from openmdao.api import Problem, Group, ImplicitComponent, IndepVarComp, NonlinearBlockGS, PETScKrylov
