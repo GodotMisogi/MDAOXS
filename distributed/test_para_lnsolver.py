@@ -95,6 +95,8 @@ if __name__ == '__main__':
     prob.driver.add_objective('total.obj')
 
     prob.root.ln_solver.options['mode'] = 'rev'
+
+    prob.setup()
     prob.run()
     err = prob['total.obj']
     result = prob['x']
