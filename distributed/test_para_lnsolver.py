@@ -34,27 +34,32 @@ if OPTIMIZER:
 class LinearSolver(Component):
     """Just a 1D Parabola."""
 
-    def __init__(self, A=np.eye(10), b=np.arange(0,10)):
+    def __init__(self, size=10, A=np.eye(10), b=np.arange(0,10)):
 
         super(LinearSolver, self).__init__()
 
         self.A = A
         self.b = b
-        self.size = np.size(b)
+        self.size = size
         # Params
-        self.add_param('x', np.ones(shape=(self.size,)))
+        self.add_param('x', np.ones(shape=(size,)))
 
         # Unknowns
-        self.add_output('y', np.ones(shape=(self.size,)))
+        self.add_state('obj', val=1.0)
 
     def solve_nonlinear(self, params, unknowns, resids):
-        """ Doesn't do much. """
-        unknowns['y'] = self.A*params['x'] - self.b
+        pass
+
+    def apply_nonlinear(self, params, unknowns, resids):
+        x = params['x']
+        A = self.A
+        b = self.b
+        resids['obj'] = A*x-b
 
     def linearize(self, params, unknowns, resids):
         """ derivs """
         J = {}
-        J['y', 'x'] = self.A
+        J['obj', 'x'] = self.A
         return J
 
 
@@ -79,25 +84,18 @@ if __name__ == '__main__':
     size = 100
     prob = Problem(impl=impl)
     root = prob.root = Group()
+
     root.ln_solver = lin_solver()
+
     root.add('p', IndepVarComp('x', val=np.ones(shape=(size,))))
     root.add('c', LinearSolver(A=np.eye(size), b=np.arange(0, size)))
     root.connect('p.x', 'c.x')
-
-    root.add('total', ExecComp('obj = np.sum(y*y)'))
-    root.connect('c.y','total.y')
-
-    prob.driver = pyOptSparseDriver()
-    prob.driver.options['optimizer'] = OPTIMIZER
-    prob.driver.options['print_results'] = False
-    prob.driver.add_desvar('x', lower=-1.0, upper=size + 1.0)
-
-    prob.driver.add_objective('total.obj')
 
     prob.root.ln_solver.options['mode'] = 'rev'
 
     prob.setup()
     prob.run()
-    err = prob['total.obj']
+    err = np.sum(np.abs(prob['c.obj']))
     result = prob['x']
     print(result)
+    print(err)
