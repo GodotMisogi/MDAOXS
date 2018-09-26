@@ -1,8 +1,4 @@
-from demo.planeFrame2D.functionality import *
-from scipy.sparse import csc_matrix
-import scipy.sparse as ss
-import scipy.sparse.linalg as ssl
-from openmdao.api import Problem
+import numpy as np
 from demo.equalLengthBeamElement.functionality import *
 def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv', N=200):
 
@@ -27,7 +23,6 @@ def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv',
     divide_list = {}
     divide_list['TOP'] = [0]
     divide_list['BOT'] = [0]
-    y = [0]
     for element_ID in range(N):
         for local_node_ID in range(2):
             x = xi[element_ID+local_node_ID]
@@ -35,8 +30,6 @@ def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv',
         count_top = min(range(turning_point_id), key=lambda i: abs(xTop[i] - x - L[0]/2))
         divide_list['TOP'].append(count_top)
         divide_list['BOT'].append(count_bot)
-        y.append((yTop[count_top]+yBot[count_bot])/2)
-
     ### FORCE
     # SPEED_OF_SOUND=295.1m/s
     force = np.zeros(shape=(2 * NNode))
@@ -72,68 +65,27 @@ def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv',
             f_bot += - w
             fBot.append(-w)
             m_bot += - 1 / 3 * w * ((x0 - xi[force_ID]) ** 2 - (x1 - xi[force_ID]) ** 2)
-        force_copy[2 * force_ID] = f_top + f_bot
+        force_copy[2 * force_ID:2 * force_ID + 2] = f_top + f_bot, 0
     for force_ID in range(NNode):
         if force_ID == 0:
             force[2 * force_ID] = force_copy[2 * force_ID]/2.
             pass
         elif force_ID == NNode-1:
-            force[2 * force_ID] = force_copy[2*(force_ID-1)]/2.
+            force[2*force_ID] = force_copy[2*(force_ID-1)]/2.
         else:
             force[2 * force_ID] = (force_copy[2 * (force_ID - 1)] + force_copy[2 * force_ID])/2.
-    import matplotlib.pyplot as plt
 
-    plt.plot(xi, y)
-    plt.scatter(xTop,yTop)
-    plt.scatter(xBot,yBot)
-    print(y[-3])
-    print(divide_list['TOP'][-3], divide_list['BOT'][-3])
-    plt.show()
 
-    return xi, y, force
+    return force
 
 if __name__ == '__main__':
-    NElement = 10
-    NNode = NElement + 1
-    E = 210E6
-    A = 0.01
-    I = 0.00005
-    K = np.zeros(shape=(3 * NNode, 3 * NNode))
 
-
-    X, Y, F = computeForce(N=NElement)
-    import scipy.io as sio
-    sio.savemat('XYF.mat',{'X':X,'Y':Y,'F':F})
-    for element in range(NElement):
-        x0, y0 = X[element], Y[element]
-        x1, y1 = X[element+1], Y[element+1]
-        LL = PlaneFrameElementLength(x0,y0,x1,y1)
-        C,S = PlaneFrameElementCS(x0,y0,x1,y1,LL)
-        k = PlaneFrameElementStiffness(E,A,I,LL,C,S)
-        PlaneFrameAssemble(K, k, element, element + 1)
-    #### assume that U_y is fixed
-    """
-    KU=F
-    U = [U1_x,U1_y,theta_1,...,UN_x,UN,y,theta_N]
-    F = [F1_x,F1_y,M1,...,FN_x,FN_y,MN]
-    """
-    import scipy.io as sio
-    sio.savemat('K.mat',{'K':K})
-    np.save('K',K)
-    # discard_row = set([0,1,2*num_nodes-2,2*num_nodes-1])
-    discard_row = set([0,1,2, 3*(NNode)-3,3*(NNode)-2,3*(NNode)-1]).union(set(range(0,3*NNode,3)))
-    saved_row = list(set(np.arange(0, 3 * NNode)) - discard_row)
-
-    A = K[np.array(saved_row)[:, np.newaxis], np.array(saved_row)]
-    F = F[2:-2]
-    sio.savemat('f.mat',{'f':F})
-    print(F[::2])
-    U = np.linalg.solve(A,F)
-
-    d = U[::2]
-    print(d)
+    F = computeForce(N=10)
+    force = F[::2]
+    print(force)
     import matplotlib.pyplot as plt
-    plt.scatter(range(len(d)),d)
-    plt.title(s='displacement distribution of plane frame method')
-    plt.savefig(fname='displacementDisPF')
-    sio.savemat('displacement.mat',{'d':d})
+    plt.scatter(range(len(force)),force,label='force')
+    plt.legend()
+    plt.title(s='Shear Force Distribution with 11 Nodes')
+    plt.savefig(fname='ShearForce')
+

@@ -1,16 +1,16 @@
-from __future__ import division
+from openmdao.api import Group, IndepVarComp, ExplicitComponent, ImplicitComponent, Problem, ScipyOptimizeDriver
+from scipy.linalg import lu_solve, lu_factor
+from demo.equalLengthBeamElement.forceCompute import computeForce
 import numpy as np
-from openmdao.api import IndepVarComp, ExplicitComponent, Group, ImplicitComponent, Problem, ScipyOptimizeDriver
-from scipy.linalg import lu_factor, lu_solve
-import scipy.io as si
+
 class MomentOfInertiaComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
-        self.metadata.declare('b')
+        self.options.declare('num_elements', types=int)
+        self.options.declare('b')
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
 
         self.add_input('h', shape=num_elements)
         self.add_output('I', shape=num_elements)
@@ -20,26 +20,27 @@ class MomentOfInertiaComp(ExplicitComponent):
         self.declare_partials('I', 'h', rows=rows, cols=cols)
 
     def compute(self, inputs, outputs):
-        b = self.metadata['b']
+        b = self.options['b']
 
         outputs['I'] = 1./12. * b * inputs['h'] ** 3
 
     def compute_partials(self, inputs, partials):
-        b = self.metadata['b']
+        b = self.options['b']
 
         partials['I', 'h'] = 1./4. * b * inputs['h'] ** 2
+
 
 class LocalStiffnessMatrixComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
-        self.metadata.declare('E')
-        self.metadata.declare('L')
+        self.options.declare('num_elements', types=int)
+        self.options.declare('E')
+        self.options.declare('L')
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
-        E = self.metadata['E']
-        L = self.metadata['L']
+        num_elements = self.options['num_elements']
+        E = self.options['E']
+        L = self.options['L']
 
         self.add_input('I', shape=num_elements)
         self.add_output('K_local', shape=(num_elements, 4, 4))
@@ -60,7 +61,7 @@ class LocalStiffnessMatrixComp(ExplicitComponent):
             val=self.mtx.reshape(16 * num_elements, num_elements))
 
     def compute(self, inputs, outputs):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
 
         outputs['K_local'] = 0
         for ind in range(num_elements):
@@ -69,10 +70,10 @@ class LocalStiffnessMatrixComp(ExplicitComponent):
 class GlobalStiffnessMatrixComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
+        self.options.declare('num_elements', types=int)
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
 
         self.add_input('K_local', shape=(num_elements, 4, 4))
@@ -95,7 +96,7 @@ class GlobalStiffnessMatrixComp(ExplicitComponent):
         self.set_check_partial_options('K_local', step=1e0)
 
     def compute(self, inputs, outputs):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
 
         outputs['K'][:, :] = 0.
@@ -109,15 +110,19 @@ class GlobalStiffnessMatrixComp(ExplicitComponent):
         outputs['K'][2 * num_nodes + 1, 1] = 1.0
         outputs['K'][0, 2 * num_nodes + 0] = 1.0
         outputs['K'][1, 2 * num_nodes + 1] = 1.0
+        #outputs['K'][2 * num_nodes + 2, 2*num_nodes-2] = 1.0
+        #outputs['K'][2 * num_nodes + 3, 2*num_nodes-1] = 1.0
+        #outputs['K'][2*num_nodes-2, 2 * num_nodes + 2] = 1.0
+        #outputs['K'][2*num_nodes-1, 2 * num_nodes + 3] = 1.0
 
 class StatesComp(ImplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
-        self.metadata.declare('force_vector', types=np.ndarray)
+        self.options.declare('num_elements', types=int)
+        self.options.declare('force_vector', types=np.ndarray)
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
         size = 2 * num_nodes + 2
 
@@ -131,19 +136,19 @@ class StatesComp(ImplicitComponent):
         self.declare_partials('d', 'd')
 
     def apply_nonlinear(self, inputs, outputs, residuals):
-        force_vector = np.concatenate([self.metadata['force_vector'], np.zeros(2)])
+        force_vector = np.concatenate([self.options['force_vector'], np.zeros(2)])
 
         residuals['d'] = np.dot(inputs['K'], outputs['d']) - force_vector
 
     def solve_nonlinear(self, inputs, outputs):
-        force_vector = np.concatenate([self.metadata['force_vector'], np.zeros(2)])
+        force_vector = np.concatenate([self.options['force_vector'], np.zeros(2)])
 
         self.lu = lu_factor(inputs['K'])
 
         outputs['d'] = lu_solve(self.lu, force_vector)
 
     def linearize(self, inputs, outputs, partials):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
         size = 2 * num_nodes + 2
 
@@ -158,13 +163,14 @@ class StatesComp(ImplicitComponent):
         else:
             d_residuals['d'] = lu_solve(self.lu, d_outputs['d'], trans=1)
 
+
 class DisplacementsComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
+        self.options.declare('num_elements', types=int)
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
         size = 2 * num_nodes + 2
 
@@ -175,20 +181,23 @@ class DisplacementsComp(ExplicitComponent):
         self.declare_partials('displacements', 'd', val=1., rows=arange, cols=arange)
 
     def compute(self, inputs, outputs):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
 
         outputs['displacements'] = inputs['d'][:2 * num_nodes]
+
+
+
 class ComplianceComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
-        self.metadata.declare('force_vector', types=np.ndarray)
+        self.options.declare('num_elements', types=int)
+        self.options.declare('force_vector', types=np.ndarray)
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
+        num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
-        force_vector = self.metadata['force_vector']
+        force_vector = self.options['force_vector'][:2*num_nodes]
 
         self.add_input('displacements', shape=2 * num_nodes)
         self.add_output('compliance')
@@ -197,21 +206,22 @@ class ComplianceComp(ExplicitComponent):
             val=force_vector.reshape((1, 2 * num_nodes)))
 
     def compute(self, inputs, outputs):
-        force_vector = self.metadata['force_vector']
+        force_vector = self.options['force_vector']
 
         outputs['compliance'] = np.dot(force_vector, inputs['displacements'])
+
 
 class VolumeComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('num_elements', types=int)
-        self.metadata.declare('b', default=1.)
-        self.metadata.declare('L')
+        self.options.declare('num_elements', types=int)
+        self.options.declare('b', default=1.)
+        self.options.declare('L')
 
     def setup(self):
-        num_elements = self.metadata['num_elements']
-        b = self.metadata['b']
-        L = self.metadata['L']
+        num_elements = self.options['num_elements']
+        b = self.options['b']
+        L = self.options['L']
         L0 = L / num_elements
 
         self.add_input('h', shape=num_elements)
@@ -220,33 +230,38 @@ class VolumeComp(ExplicitComponent):
         self.declare_partials('volume', 'h', val=b * L0)
 
     def compute(self, inputs, outputs):
-        num_elements = self.metadata['num_elements']
-        b = self.metadata['b']
-        L = self.metadata['L']
+        num_elements = self.options['num_elements']
+        b = self.options['b']
+        L = self.options['L']
         L0 = L / num_elements
 
         outputs['volume'] = np.sum(inputs['h'] * b * L0)
 
+
 class BeamGroup(Group):
 
     def initialize(self):
-        self.metadata.declare('E')
-        self.metadata.declare('L')
-        self.metadata.declare('b')
-        self.metadata.declare('volume')
-        self.metadata.declare('num_elements', int)
+        self.options.declare('E')
+        self.options.declare('L')
+        self.options.declare('b')
+        self.options.declare('volume')
+        self.options.declare('num_elements', int)
+        self.options.declare('force_file', str)
 
     def setup(self):
-        E = self.metadata['E']
-        L = self.metadata['L']
-        b = self.metadata['b']
-        volume = self.metadata['volume']
-        num_elements = self.metadata['num_elements']
+        E = self.options['E']
+        L = self.options['L']
+        b = self.options['b']
+        volume = self.options['volume']
+        num_elements = self.options['num_elements']
+        force_file=self.options['force_file']
+
         num_nodes = num_elements + 1
 
-        force_vector = np.zeros(2 * num_nodes)
-        force_vector[-2] = -1.
-
+        force_vector = computeForce(force_file=force_file,N=num_elements)
+        #force_vector = np.zeros(2*num_nodes)
+        #force_vector[::2] = np.random.rand(len(force_vector[::2]))
+        #print(force_vector[::2])
         inputs_comp = IndepVarComp()
         inputs_comp.add_output('h', shape=num_elements)
         self.add_subsystem('inputs_comp', inputs_comp)
@@ -290,20 +305,19 @@ class BeamGroup(Group):
             'inputs_comp.h',
             'volume_comp.h')
 
-        self.add_design_var('inputs_comp.h', lower=1e-2, upper=10.)
+        self.add_design_var('inputs_comp.h', lower=1e-2, upper=100.)
         self.add_objective('compliance_comp.compliance')
         self.add_constraint('volume_comp.volume', equals=volume)
 
 
-
-E = 1E6
+E = 210E6
 L = 1.
 b = 0.1
 volume = 0.01
 
-num_elements = 50
-
-prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
+num_elements = 10
+num_nodes = num_elements + 1
+prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements,force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv'))
 
 prob.driver = ScipyOptimizeDriver()
 prob.driver.options['optimizer'] = 'SLSQP'
@@ -312,30 +326,13 @@ prob.driver.options['disp'] = True
 
 prob.setup()
 prob.run_driver()
-
-K = prob['states_comp.K']
-
-print(np.linalg.det(K))
-"""
-import test.timing
-for num_elements in [10, 100, 200,500, 1000, 2000]:
-    prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
-
-    # prob.driver = ScipyOptimizeDriver()
-    # prob.driver.options['optimizer'] = 'SLSQP'
-    # prob.driver.options['tol'] = 1e-9
-    # prob.driver.options['disp'] = True
-
-    prob.setup()
-    with test.timing.timeblock('adjoint time cost with ' + str(num_elements)+ " elements: "):
-        dd = prob.compute_totals(wrt=['inputs_comp.h'], of=['compliance_comp.compliance'])
-"""
 h = prob['inputs_comp.h']
-print(h)
-d = prob['displacements_comp.d']
+d = prob['compliance_comp.displacements']
 print(d[::2])
-#import matplotlib.pyplot as plt
-#print(dd)
-#plt.plot(np.arange(len(h)),h)
-#plt.show()
-#prob.check_totals(compact_print=True)
+import matplotlib.pyplot as plt
+plt.plot(range(len(d[::2])),d[::2])
+plt.title(s='displacement distribution of the airfoil')
+plt.savefig(fname='displacement')
+#plt.plot(range(len(h)),h)
+#plt.title(s='thickness distribution of the airfoil')
+#plt.savefig(fname='thicknessDis')

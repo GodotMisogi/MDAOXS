@@ -173,6 +173,7 @@ class DisplacementsComp(ExplicitComponent):
         num_nodes = num_elements + 1
 
         outputs['displacements'] = inputs['d'][:2 * num_nodes]
+
 class ComplianceComp(ExplicitComponent):
 
     def initialize(self):

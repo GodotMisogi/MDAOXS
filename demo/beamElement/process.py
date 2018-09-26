@@ -37,19 +37,33 @@ E = 1.
 L = np.zeros(shape=(num_elements,1))
 I = 0.1
 
+
 try:
-    #assert(1==0)
+    assert(1==0)
     K = ss.load_npz('/Users/gakki/PycharmProjects/MDAOXS/K_beam1D.mat.npz')
 except:
     print('cant find K, GENERATING')
     ##### generate sparse pattern
-    template_nonzero_matrix = np.zeros(shape=(2, ASSEMBLE_ENTRIES * num_elements))
+    template_nonzero_matrix = np.zeros(shape=(2, ASSEMBLE_ENTRIES * num_elements + 4))
     for element_ID in range(num_elements):
         i = int(element_ID)+1
         j = int((element_ID+1)%num_nodes)+1
         generate_template(template_nonzero_matrix,i,j,element_ID)
 
-    K = csc_matrix((np.zeros(shape=(ASSEMBLE_ENTRIES*num_elements)),(template_nonzero_matrix[0,:], template_nonzero_matrix[1,:])), shape=(2 * num_nodes, 2 * num_nodes))
+    # bc
+    template_nonzero_matrix[0, ASSEMBLE_ENTRIES*num_elements] = 2 * num_nodes
+    template_nonzero_matrix[1, ASSEMBLE_ENTRIES*num_elements] = 0
+
+    template_nonzero_matrix[0, ASSEMBLE_ENTRIES*num_elements+1] = 2 * num_nodes + 1
+    template_nonzero_matrix[1, ASSEMBLE_ENTRIES*num_elements+1] = 1
+
+    template_nonzero_matrix[0, ASSEMBLE_ENTRIES * num_elements + 2] = 0
+    template_nonzero_matrix[1, ASSEMBLE_ENTRIES * num_elements + 2] = 2 * num_nodes
+
+    template_nonzero_matrix[0, ASSEMBLE_ENTRIES * num_elements + 3] = 1
+    template_nonzero_matrix[1, ASSEMBLE_ENTRIES * num_elements + 3] = 2 * num_nodes + 1
+
+    K = csc_matrix((np.zeros(shape=(ASSEMBLE_ENTRIES*num_elements+4)),(template_nonzero_matrix[0,:], template_nonzero_matrix[1,:])), shape=(2 * num_nodes+2, 2 * num_nodes+2))
 
     ##### generate global matrix
     for element_ID in range(num_elements):
@@ -60,6 +74,10 @@ except:
         L[element_ID] = abs(x2-x1)
         k = BeamElementStiffness(E,I,L[element_ID])
         BeamAssemble(K, k, i, j)
+    K[2 * num_nodes, 0] = 1
+    K[2 * num_nodes + 1 ,1] = 1
+    K[0, 2*num_nodes] = 1
+    K[1, 2*num_nodes+1] = 1
     ss.save_npz('K_beam1D.mat', K)
 
 
@@ -68,9 +86,10 @@ except:
 ### FORCE
 # SPEED_OF_SOUND=295.1m/s
 force_file = np.loadtxt(FORCE_FILE,delimiter=',',skiprows=1)
+force = np.zeros(shape=(2*num_nodes+2,1))
 
-force = np.zeros(shape=(2*num_nodes,1))
 ## compute dimensional force
+
 for force_ID in range(len(force_file)):
     current_point_id =  int(force_file[force_ID,0] - __MIN_NODE_ID)
     pre_point_id = int(force_file[force_ID-1,0] - __MIN_NODE_ID)
@@ -81,15 +100,19 @@ for force_ID in range(len(force_file)):
     LR = BeamElementLength(x1, y1, x2, y2)
     LL = BeamElementLength(x0, y0, x1, y1)
     #fx,fy = force_file[force_ID,3] * computeN_VEC(x0,y0,x1,y1,x2,y2)
-    fx,fy = force_file[force_ID,4] * abs(force_file[force_ID,3] *  computeN_VEC(x0,y0,x1,y1,x2,y2))
-    w = fy
-    
+    fx,fy = abs(force_file[force_ID,3] *  computeN_VEC(x0,y0,x1,y1,x2,y2))
+    w = -fy
+
+    if force_ID >= 399:
+        w = -w
+
     f = -w * (LL+LR)/2
     m = w * (LL+LR)**2 / 12
     for i in range(num_nodes):
         if new_info[i][2] == current_point_id:
             idx = i
             break
+
     force[2*idx:2*idx + 2,0] = f, m
 
 
@@ -99,10 +122,13 @@ KU=F
 U = [U1_x,U1_y,theta_1,...,UN_x,UN,y,theta_N]
 F = [F1_x,F1_y,M1,...,FN_x,FN_y,MN]
 """
-discard_row = set([0,1,2*num_nodes-2,2*num_nodes-1])
-saved_row = list(set(np.arange(0,2*num_nodes)) - discard_row)
+#discard_row = set([0,1,2*num_nodes-2,2*num_nodes-1])
+discard_row = set()
+saved_row = list(set(np.arange(0,2*num_nodes+2)) - discard_row)
 #saved_row = np.arange(1,3*num_nodes,3)
+
 A = K[np.array(saved_row)[:,np.newaxis], np.array(saved_row)]
+
 F = force[saved_row]
 #A = K
 #F = force
@@ -129,7 +155,7 @@ plt.scatter(force_dict['X'],force_dict['Y'], c="orange", s=0.1,label='original')
 plt.xlim()
 plt.ylim()
 plt.legend()
-plt.savefig(filename='20180328')
+plt.savefig(fname='20180728')
 
 si.savemat('A.mat',mdict={'A':A.todense()})
 si.savemat('F.mat',mdict={'F':F})
