@@ -63,14 +63,6 @@ class LinearSolver(Component):
         return J
 
 
-class MP_Point(Group):
-
-    def __init__(self, size=10):
-        super(MP_Point, self).__init__()
-        self.add('p', IndepVarComp('x', val=np.ones(shape=(size,))))
-        self.add('c', LinearSolver(A=np.eye(size),b=np.arange(0,size)))
-        self.connect('p.x', 'c.x')
-
 
 if __name__ == '__main__':
     #from openmdao.test.mpi_util import mpirun_tests
@@ -85,17 +77,16 @@ if __name__ == '__main__':
     prob = Problem(impl=impl)
     root = prob.root = Group()
 
-    root.ln_solver = lin_solver()
-
     root.add('p', IndepVarComp('x', val=np.ones(shape=(size,))))
-    root.add('c', LinearSolver(A=np.eye(size), b=np.arange(0, size)))
+    root.add('c', LinearSolver(size=size, A=np.eye(size), b=np.arange(0, size)))
     root.connect('p.x', 'c.x')
 
-    prob.root.ln_solver.options['mode'] = 'rev'
+
+    root.ln_solver = lin_solver()
 
     prob.setup()
     prob.run()
     err = np.sum(np.abs(prob['c.obj']))
-    result = prob['x']
+    result = prob['p.x']
     print(result)
     print(err)
