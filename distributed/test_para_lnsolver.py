@@ -16,9 +16,11 @@ from openmdao.test.exec_comp_for_test import ExecComp4Test
 if MPI:
     from openmdao.core.petsc_impl import PetscImpl as impl
     from openmdao.solvers.petsc_ksp import PetscKSP as lin_solver
+    print('MPI USED')
 else:
     from openmdao.core.basic_impl import BasicImpl as impl
     from openmdao.solvers.scipy_gmres import ScipyGMRES as lin_solver
+    print("MPI NOT USED")
 
 # check that pyoptsparse is installed
 # if it is, try to use SNOPT but fall back to SLSQP
