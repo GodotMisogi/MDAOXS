@@ -54,7 +54,7 @@ class LinearSolver(Component):
         x = params['x']
         A = self.A
         b = self.b
-        resids['obj'] = A*x-b
+        resids['obj'] = np.matmil(A,x)-b
 
     def linearize(self, params, unknowns, resids):
         """ derivs """

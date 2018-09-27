@@ -1,8 +1,5 @@
 from demo.beamElement.functionality import *
-from scipy.sparse import csc_matrix
-import scipy.sparse as ss
-import scipy.io as si
-import scipy.sparse.linalg as ssl
+
 FORCE_FILE = "/Users/gakki/Dropbox/thesis/surface_flow_sort.csv"
 SAVED_K_FILE = '/Users/gakki/PycharmProjects/MDAOXS/K_planeFrame2D.mat.npz'
 
