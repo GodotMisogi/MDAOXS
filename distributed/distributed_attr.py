@@ -1,112 +1,85 @@
-from __future__ import print_function
 import numpy as np
-from six.moves import range
 
-from openmdao.api import Component
-from openmdao.util.array_util import evenly_distrib_idxs
+from openmdao.api import Problem, ExplicitComponent, Group, IndepVarComp, PETScVector
+from openmdao.utils.mpi import MPI
+from openmdao.utils.array_utils import evenly_distrib_idxs
 
-class DistributedAdder(Component):
-    """
-    Distributes the work of adding 10 to every item in the param vector
-    """
+from openmdao.utils.mpi import MPI
 
-    def __init__(self, size=100):
-        super(DistributedAdder, self).__init__()
+if not MPI:
+    raise unittest.SkipTest()
 
-        self.local_size = self.size = int(size)
+rank = MPI.COMM_WORLD.rank
+size = 15
 
-        #NOTE: we declare the variables at full size so that the component will work in serial too
-        self.add_param('x', shape=size)
-        self.add_output('y', shape=size)
 
-    def get_req_procs(self):
-        """
-        min/max number of procs that this component can use
-        """
-        return (1,self.size)
+class DistribComp(ExplicitComponent):
+    def __init__(self, size):
+        super(DistribComp, self).__init__()
+        self.size = size
+        self.distributed = True
 
-    def setup_distrib(self):
-        """
-        specify the local sizes of the variables and which specific indices this specific
-        distributed component will handle. Indices do NOT need to be sequential or
-        contiguous!
-        """
+    def compute(self, inputs, outputs):
+        if self.comm.rank == 0:
+            outputs['outvec'] = inputs['invec'] * 2.0
+        else:
+            outputs['outvec'] = inputs['invec'] * -3.0
 
+    def setup(self):
         comm = self.comm
         rank = comm.rank
 
-        # NOTE: evenly_distrib_idxs is a helper function to split the array
-        #       up as evenly as possible
+        # this results in 8 entries for proc 0 and 7 entries for proc 1 when using 2 processes.
         sizes, offsets = evenly_distrib_idxs(comm.size, self.size)
-        local_size, local_offset = sizes[rank], offsets[rank]
-        self.local_size = int(local_size)
+        start = offsets[rank]
+        end = start + sizes[rank]
 
-        start = local_offset
-        end = local_offset + local_size
-
-        self.set_var_indices('x', val=np.zeros(local_size, float),
-            src_indices=np.arange(start, end, dtype=int))
-        self.set_var_indices('y', val=np.zeros(local_size, float),
-            src_indices=np.arange(start, end, dtype=int))
-
-    def solve_nonlinear(self, params, unknowns, resids):
-
-        #NOTE: Each process will get just its local part of the vector
-        print('process {0:d}: {1}'.format(self.comm.rank, params['x'].shape))
-
-        unknowns['y'] = params['x'] + 10
+        self.add_input('invec', np.ones(sizes[rank], float),
+                       src_indices=np.arange(start, end, dtype=int))
+        self.add_output('outvec', np.ones(sizes[rank], float))
 
 
-class Summer(Component):
-    """
-    Agreggation component that collects all the values from the distributed
-    vector addition and computes a total
-    """
+class Summer(ExplicitComponent):
 
-    def __init__(self, size=100):
+    def __init__(self, size):
         super(Summer, self).__init__()
+        self.size = size
 
-        #NOTE: this component depends on the full y array, so OpenMDAO
-        #      will automatically gather all the values for it
-        self.add_param('y', val=np.zeros(size))
-        self.add_output('sum', shape=1)
+    def setup(self):
+        # this results in 8 entries for proc 0 and 7 entries for proc 1
+        # when using 2 processes.
+        sizes, offsets = evenly_distrib_idxs(self.comm.size, self.size)
+        start = offsets[rank]
+        end = start + sizes[rank]
 
-    def solve_nonlinear(self, params, unknowns, resids):
+        # NOTE: you must specify src_indices here for the input. Otherwise,
+        #       you'll connect the input to [0:local_input_size] of the
+        #       full distributed output!
+        self.add_input('invec', np.ones(sizes[self.comm.rank], float),
+                       src_indices=np.arange(start, end, dtype=int))
+        self.add_output('out', 0.0)
 
-        unknowns['sum'] = np.sum(params['y'])
+    def compute(self, inputs, outputs):
+        data = np.zeros(1)
+        data[0] = np.sum(self._inputs['invec'])
+        total = np.zeros(1)
+        self.comm.Allreduce(data, total, op=MPI.SUM)
+        self._outputs['out'] = total[0]
 
-import time
 
-from openmdao.api import Problem, Group, IndepVarComp
+p = Problem(model=Group())
+top = p.model
+top.add_subsystem("indep", IndepVarComp('x', np.zeros(size)))
+top.add_subsystem("C2", DistribComp(size))
+top.add_subsystem("C3", Summer(size))
 
-from openmdao.core.mpi_wrap import MPI
+top.connect('indep.x', 'C2.invec')
+top.connect('C2.outvec', 'C3.invec')
 
-if MPI:
-    # if you called this script with 'mpirun', then use the petsc data passing
-    from openmdao.core.petsc_impl import PetscImpl as impl
-else:
-    # if you didn't use `mpirun`, then use the numpy data passing
-    from openmdao.api import BasicImpl as impl
+p.setup(vector_class=PETScVector)
 
-#how many items in the array
-size = 1000000
+p['indep.x'] = np.ones(size)
 
-prob = Problem(impl=impl)
-prob.root = Group()
+p.run_model()
 
-prob.root.add('des_vars', IndepVarComp('x', np.ones(size)), promotes=['x'])
-prob.root.add('plus', DistributedAdder(size), promotes=['x', 'y'])
-prob.root.add('summer', Summer(size), promotes=['y', 'sum'])
-
-prob.setup(check=False)
-
-prob['x'] = np.ones(size)
-
-st = time.time()
-prob.run()
-
-#only print from the rank 0 process
-if prob.root.comm.rank == 0:
-    print("run time:", time.time() - st)
-    #expected answer is 11
-    print("answer: ", prob['sum']/size)
+print(p['C3.out'])

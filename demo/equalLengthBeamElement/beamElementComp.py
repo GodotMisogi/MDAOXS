@@ -1,6 +1,6 @@
 from openmdao.api import Group, IndepVarComp, ExplicitComponent, ImplicitComponent, Problem, ScipyOptimizeDriver
 from scipy.linalg import lu_solve, lu_factor
-from demo.equalLengthBeamElement.forceCompute import computeForce
+from demo.equalLengthBeamElement.BeamModel import *
 import numpy as np
 
 class MomentOfInertiaComp(ExplicitComponent):
@@ -258,7 +258,8 @@ class BeamGroup(Group):
 
         num_nodes = num_elements + 1
 
-        force_vector = computeForce(force_file=force_file,N=num_elements)
+        beam = BeamModel(force_file=force_file,N=num_elements)
+        force_vector = beam.computeForce()
         #force_vector = np.zeros(2*num_nodes)
         #force_vector[::2] = np.random.rand(len(force_vector[::2]))
         #print(force_vector[::2])
@@ -315,24 +316,36 @@ L = 1.
 b = 0.1
 volume = 0.01
 
-num_elements = 10
+num_elements = 20
 num_nodes = num_elements + 1
 prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements,force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv'))
 
 prob.driver = ScipyOptimizeDriver()
 prob.driver.options['optimizer'] = 'SLSQP'
-prob.driver.options['tol'] = 1e-9
+prob.driver.options['tol'] = 1e-5
 prob.driver.options['disp'] = True
 
 prob.setup()
 prob.run_driver()
 h = prob['inputs_comp.h']
 d = prob['compliance_comp.displacements']
-print(d[::2])
-import matplotlib.pyplot as plt
-plt.plot(range(len(d[::2])),d[::2])
-plt.title(s='displacement distribution of the airfoil')
-plt.savefig(fname='displacement')
-#plt.plot(range(len(h)),h)
-#plt.title(s='thickness distribution of the airfoil')
-#plt.savefig(fname='thicknessDis')
+from util.plot import *
+displacement = d[::2]/1000
+
+plt = oneDPlot(displacement,'scatter',1,xlabel='x',ylabel='displacement')
+finalizePlot(plt,title='The displacement distribution along the beam with %d nodes'%(num_nodes),savefig=True,fname='beam_d.eps')
+
+# REBUILD
+displacement = d[::2]/1000
+beam = BeamModel(N=num_elements)
+print(np.shape(displacement))
+print(np.shape(beam.computeForce()[::2]))
+
+xi, y_top, y_bot = beam.rebuildShape(displacement)
+plt.figure()
+plt = interpolatePlot(xi,y_top,plotstyple='scatter',N=396,label='rebuilt shape',c='orange',s=0.2)
+plt = interpolatePlot(xi,y_bot,plotstyple='scatter',N=396,c='orange',s=0.2)
+plt = twoDPlot(beam.airfoil['x_top'],beam.airfoil['y_top'],plotstyle='scatter',xlabel='x',ylabel='y',label='original shape', c='blue',s=0.2,alpha=0.5)
+plt = twoDPlot(beam.airfoil['x_bot'],beam.airfoil['y_bot'],plotstyle='scatter',xlabel='x',ylabel='y', c='blue',s=0.2,alpha=0.5)
+
+finalizePlot(plt,title='The result of the beam model with %d nodes'%(num_nodes),savefig=True,fname='beam_result.eps')

@@ -4,6 +4,8 @@ import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 from openmdao.api import Problem
 from demo.equalLengthBeamElement.functionality import *
+from util.io.airfoilIO import *
+from demo.equalLengthBeamElement.BeamModel import computeForce2
 def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv', N=200):
 
     info = np.loadtxt(force_file,delimiter=',',skiprows=1)
@@ -93,7 +95,7 @@ def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv',
     return xi, y, force
 
 if __name__ == '__main__':
-    NElement = 10
+    NElement = 20
     NNode = NElement + 1
     E = 210E6
     A = 0.01
@@ -102,8 +104,9 @@ if __name__ == '__main__':
 
 
     X, Y, F = computeForce(N=NElement)
-    import scipy.io as sio
-    sio.savemat('XYF.mat',{'X':X,'Y':Y,'F':F})
+    F = computeForce2(N=NElement)
+    #import scipy.io as sio
+    #sio.savemat('XYF.mat',{'X':X,'Y':Y,'F':F})
     for element in range(NElement):
         x0, y0 = X[element], Y[element]
         x1, y1 = X[element+1], Y[element+1]
@@ -117,23 +120,26 @@ if __name__ == '__main__':
     U = [U1_x,U1_y,theta_1,...,UN_x,UN,y,theta_N]
     F = [F1_x,F1_y,M1,...,FN_x,FN_y,MN]
     """
-    import scipy.io as sio
-    sio.savemat('K.mat',{'K':K})
-    np.save('K',K)
+    #import scipy.io as sio
+    #sio.savemat('K.mat',{'K':K})
+    #np.save('K',K)
     # discard_row = set([0,1,2*num_nodes-2,2*num_nodes-1])
     discard_row = set([0,1,2, 3*(NNode)-3,3*(NNode)-2,3*(NNode)-1]).union(set(range(0,3*NNode,3)))
     saved_row = list(set(np.arange(0, 3 * NNode)) - discard_row)
 
     A = K[np.array(saved_row)[:, np.newaxis], np.array(saved_row)]
     F = F[2:-2]
-    sio.savemat('f.mat',{'f':F})
+    #sio.savemat('f.mat',{'f':F})
     print(F[::2])
     U = np.linalg.solve(A,F)
 
     d = U[::2]
     print(d)
-    import matplotlib.pyplot as plt
-    plt.scatter(range(len(d)),d)
-    plt.title(s='displacement distribution of plane frame method')
-    plt.savefig(fname='displacementDisPF')
-    sio.savemat('displacement.mat',{'d':d})
+    from util.plot import *
+    plt.figure()
+    plt = oneDPlot(d,'scatter',1,xlabel='x',ylabel='displacement')
+    finalizePlot(plt, title='The displacement distribution along the plane frame with %d nodes'%NNode,savefig=True,fname='pf_d.eps'
+                                                                                                     )
+    plt.figure()
+    plt = oneDPlot(F[::2],'scatter',1,xlabel='x',ylabel='shear force in y direction')
+    finalizePlot(plt, title='The shear force (in y direction) distribution alone the plane frame with %d nodes'%NNode,savefig=True,fname='pf_f.eps')

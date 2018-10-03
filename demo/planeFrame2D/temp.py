@@ -115,16 +115,17 @@ discard_row = set()
 saved_row = list(set(np.arange(0,2*num_nodes+2)) - discard_row)
 #saved_row = np.arange(1,3*num_nodes,3)
 
-A = K[np.array(saved_row)[:,np.newaxis], np.array(saved_row)]
+#A = K[np.array(saved_row)[:,np.newaxis], np.array(saved_row)]
 
-F = force[saved_row]
+#F = force[saved_row]
 
 
-import matplotlib.pyplot as plt
-plt.scatter(force_dict['X'],force_dict['Y'],s=0.1,label='shape')
-plt.plot(xi,y,'x-',label='plane frame',c='red')
-plt.plot(xi,np.zeros(shape=(len(xi),1)),'o-',label='beam',c='green')
-plt.legend()
-plt.title('equal x-distance')
-plt.savefig('x-distance.png')
-plt.show()
+from util.plot import *
+plt.figure()
+plt = twoDPlot(force_dict['X'],force_dict['Y'],plotstyle='scatter',label='the original shape',s=0.1)
+plt = twoDPlot(xi,y,label='the plane frame model',marker='x',c='red')
+plt = twoDPlot(xi,np.zeros(shape=(len(xi),1)),label='the beam model',marker='o',c='green')
+plt.legend(loc=1)
+plt.xlabel('x')
+plt.ylabel('y')
+finalizePlot(plt,title='the modelling for NACA6a203 airfoil',savefig=True,fname='model_xdistance.eps')
