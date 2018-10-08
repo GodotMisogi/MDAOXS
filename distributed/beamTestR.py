@@ -1,8 +1,8 @@
 from __future__ import division
 import numpy as np
-from openmdao.api import IndepVarComp, ExplicitComponent, Group, ImplicitComponent, Problem, ScipyOptimizeDriver
-from scipy.linalg import lu_factor, lu_solve
-import scipy.io as si
+from openmdao.api import ExplicitComponent,Group, IndepVarComp,Problem,ScipyOptimizeDriver,ImplicitComponent
+
+
 class MomentOfInertiaComp(ExplicitComponent):
 
     def initialize(self):
@@ -29,6 +29,8 @@ class MomentOfInertiaComp(ExplicitComponent):
 
         partials['I', 'h'] = 1./4. * b * inputs['h'] ** 2
 
+
+
 class LocalStiffnessMatrixComp(ExplicitComponent):
 
     def initialize(self):
@@ -46,9 +48,9 @@ class LocalStiffnessMatrixComp(ExplicitComponent):
 
         L0 = L / num_elements
         coeffs = np.empty((4, 4))
-        coeffs[0, :] = [12 , 6 * L0, -12, 6 * L0]
+        coeffs[0, :] = [12, 6 * L0, -12, 6 * L0]
         coeffs[1, :] = [6 * L0, 4 * L0 ** 2, -6 * L0, 2 * L0 ** 2]
-        coeffs[2, :] = [-12 , -6 * L0, 12, -6 * L0]
+        coeffs[2, :] = [-12, -6 * L0, 12, -6 * L0]
         coeffs[3, :] = [6 * L0, 2 * L0 ** 2, -6 * L0, 4 * L0 ** 2]
         coeffs *= E / L0 ** 3
 
@@ -66,49 +68,10 @@ class LocalStiffnessMatrixComp(ExplicitComponent):
         for ind in range(num_elements):
             outputs['K_local'][ind, :, :] = self.mtx[ind, :, :, ind] * inputs['I'][ind]
 
-class GlobalStiffnessMatrixComp(ExplicitComponent):
+from six.moves import range
+from scipy.sparse import coo_matrix
+from scipy.sparse.linalg import splu
 
-    def initialize(self):
-        self.options.declare('num_elements', types=int)
-
-    def setup(self):
-        num_elements = self.options['num_elements']
-        num_nodes = num_elements + 1
-
-        self.add_input('K_local', shape=(num_elements, 4, 4))
-        self.add_output('K', shape=(2 * num_nodes + 2, 2 * num_nodes + 2))
-
-        rows = np.zeros(16 * num_elements, int)
-        indices = np.arange(
-            ((2 * num_nodes + 2) * (2 * num_nodes + 2))
-        ).reshape((2 * num_nodes + 2, 2 * num_nodes + 2))
-        ind1, ind2 = 0, 0
-        for ind in range(num_elements):
-            ind2 += 16
-            ind1_ = 2 * ind
-            ind2_ = 2 * ind + 4
-            rows[ind1:ind2] = indices[ind1_:ind2_, ind1_:ind2_].flatten()
-            ind1 += 16
-        cols = np.arange(16 * num_elements)
-        self.declare_partials('K', 'K_local', val=1., rows=rows, cols=cols)
-
-        self.set_check_partial_options('K_local', step=1e0)
-
-    def compute(self, inputs, outputs):
-        num_elements = self.options['num_elements']
-        num_nodes = num_elements + 1
-
-        outputs['K'][:, :] = 0.
-        for ind in range(num_elements):
-            ind1_ = 2 * ind
-            ind2_ = 2 * ind + 4
-
-            outputs['K'][ind1_:ind2_, ind1_:ind2_] += inputs['K_local'][ind, :, :]
-
-        outputs['K'][2 * num_nodes + 0, 0] = 1.0
-        outputs['K'][2 * num_nodes + 1, 1] = 1.0
-        outputs['K'][0, 2 * num_nodes + 0] = 1.0
-        outputs['K'][1, 2 * num_nodes + 1] = 1.0
 
 class StatesComp(ImplicitComponent):
 
@@ -119,44 +82,105 @@ class StatesComp(ImplicitComponent):
     def setup(self):
         num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
-        size = 2 * num_nodes + 2
+        size = 2 * num_nodes - 2
 
-        self.add_input('K', shape=(size, size))
+        self.add_input('K_local', shape=(num_elements, 4, 4))
         self.add_output('d', shape=size)
 
-        rows = np.outer(np.arange(size), np.ones(size, int)).flatten()
-        cols = np.arange(size ** 2)
-        self.declare_partials('d', 'K', rows=rows, cols=cols)
+        cols = np.arange(16*num_elements)
+        rows = np.repeat(np.arange(4), 4)
+        rows = np.tile(rows, num_elements) + np.repeat(np.arange(num_elements), 16) * 2
 
+        self.declare_partials('d', 'K_local', rows=rows, cols=cols)
         self.declare_partials('d', 'd')
 
     def apply_nonlinear(self, inputs, outputs, residuals):
-        force_vector = np.concatenate([self.options['force_vector'], np.zeros(2)])
+        force_vector = self.options['force_vector'][2:]
 
-        residuals['d'] = np.dot(inputs['K'], outputs['d']) - force_vector
+        self.K = self.assemble_CSC_K(inputs)
+        residuals['d'] = np.dot(self.K, outputs['d']) - force_vector
 
     def solve_nonlinear(self, inputs, outputs):
-        force_vector = np.concatenate([self.options['force_vector'], np.zeros(2)])
+        force_vector = self.options['force_vector'][2:]
 
-        self.lu = lu_factor(inputs['K'])
+        self.K = self.assemble_CSC_K(inputs)
+        self.lu = splu(self.K)
 
-        outputs['d'] = lu_solve(self.lu, force_vector)
+        outputs['d'] = self.lu.solve(force_vector)
 
-    def linearize(self, inputs, outputs, partials):
+    def linearize(self, inputs, outputs, jacobian):
         num_elements = self.options['num_elements']
-        num_nodes = num_elements + 1
-        size = 2 * num_nodes + 2
 
-        self.lu = lu_factor(inputs['K'])
+        self.K = self.assemble_CSC_K(inputs)
+        self.lu = splu(self.K)
 
-        partials['d', 'K'] = np.outer(np.ones(size), outputs['d']).flatten()
-        partials['d', 'd'] = inputs['K']
+        i_elem = np.tile(np.arange(4), 4)
+        i_d = np.tile(i_elem, num_elements) + np.repeat(np.arange(num_elements), 16) * 2
+
+        jacobian['d', 'K_local'] = outputs['d'][i_d]
+
+        jacobian['d', 'd'] = self.K.toarray()
 
     def solve_linear(self, d_outputs, d_residuals, mode):
         if mode == 'fwd':
-            d_outputs['d'] = lu_solve(self.lu, d_residuals['d'], trans=0)
+            d_outputs['d'] = self.lu.solve(d_residuals['d'])
         else:
-            d_residuals['d'] = lu_solve(self.lu, d_outputs['d'], trans=1)
+            d_residuals['d'] = self.lu.solve(d_outputs['d'])
+
+    def assemble_CSC_K(self, inputs):
+        """
+        Assemble the stiffness matrix in sparse CSC format.
+
+        Returns
+        -------
+        ndarray
+            Stiffness matrix as dense ndarray.
+        """
+        num_elements = self.options['num_elements']
+        num_nodes = num_elements + 1
+        num_entry = num_elements * 12 + 4
+        ndim = num_entry
+
+        data = np.zeros((ndim, ))
+        cols = np.empty((ndim, ))
+        rows = np.empty((ndim, ))
+
+        # First element.
+        data[:16] = inputs['K_local'][0, :, :].flat
+        cols[:16] = np.tile(np.arange(4), 4)
+        rows[:16] = np.repeat(np.arange(4), 4)
+
+        j = 16
+        for ind in range(1, num_elements):
+            ind1 = 2 * ind
+            K = inputs['K_local'][ind, :, :]
+
+            # NW quadrant gets summed with previous connected element.
+            data[j-6:j-4] += K[0, :2]
+            data[j-2:j] += K[1, :2]
+
+            # NE quadrant
+            data[j:j+4] = K[:2, 2:].flat
+            rows[j:j+4] = np.array([ind1, ind1, ind1 + 1, ind1 + 1])
+            cols[j:j+4] = np.array([ind1 + 2, ind1 + 3, ind1 + 2, ind1 + 3])
+
+            # SE and SW quadrants together
+            data[j+4:j+12] = K[2:, :].flat
+            rows[j+4:j+12] = np.repeat(np.arange(ind1 + 2, ind1 + 4), 4)
+            cols[j+4:j+12] = np.tile(np.arange(ind1, ind1 + 4), 2)
+
+            j += 12
+        for idx,(row,col) in enumerate(zip(rows,cols)):
+            row = row - 2
+            col = col - 2
+
+
+
+
+        n_K = 2 * num_nodes - 2
+        return coo_matrix((data, (rows, cols)), shape=(n_K, n_K)).tocsc()
+
+
 
 class DisplacementsComp(ExplicitComponent):
 
@@ -179,6 +203,9 @@ class DisplacementsComp(ExplicitComponent):
         num_nodes = num_elements + 1
 
         outputs['displacements'] = inputs['d'][:2 * num_nodes]
+
+
+
 class ComplianceComp(ExplicitComponent):
 
     def initialize(self):
@@ -194,12 +221,13 @@ class ComplianceComp(ExplicitComponent):
         self.add_output('compliance')
 
         self.declare_partials('compliance', 'displacements',
-            val=force_vector.reshape((1, 2 * num_nodes)))
+                              val=force_vector.reshape((1, 2 * num_nodes)))
 
     def compute(self, inputs, outputs):
         force_vector = self.options['force_vector']
 
         outputs['compliance'] = np.dot(force_vector, inputs['displacements'])
+
 
 class VolumeComp(ExplicitComponent):
 
@@ -226,6 +254,8 @@ class VolumeComp(ExplicitComponent):
         L0 = L / num_elements
 
         outputs['volume'] = np.sum(inputs['h'] * b * L0)
+
+
 
 class BeamGroup(Group):
 
@@ -257,9 +287,6 @@ class BeamGroup(Group):
         comp = LocalStiffnessMatrixComp(num_elements=num_elements, E=E, L=L)
         self.add_subsystem('local_stiffness_matrix_comp', comp)
 
-        comp = GlobalStiffnessMatrixComp(num_elements=num_elements)
-        self.add_subsystem('global_stiffness_matrix_comp', comp)
-
         comp = StatesComp(num_elements=num_elements, force_vector=force_vector)
         self.add_subsystem('states_comp', comp)
 
@@ -276,10 +303,7 @@ class BeamGroup(Group):
         self.connect('I_comp.I', 'local_stiffness_matrix_comp.I')
         self.connect(
             'local_stiffness_matrix_comp.K_local',
-            'global_stiffness_matrix_comp.K_local')
-        self.connect(
-            'global_stiffness_matrix_comp.K',
-            'states_comp.K')
+            'states_comp.K_local')
         self.connect(
             'states_comp.d',
             'displacements_comp.d')
@@ -295,13 +319,12 @@ class BeamGroup(Group):
         self.add_constraint('volume_comp.volume', equals=volume)
 
 
-
 E = 1.
 L = 1.
 b = 0.1
 volume = 0.01
 
-num_elements = 2000
+num_elements = 50
 
 prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
 
@@ -309,28 +332,9 @@ prob.driver = ScipyOptimizeDriver()
 prob.driver.options['optimizer'] = 'SLSQP'
 prob.driver.options['tol'] = 1e-9
 prob.driver.options['disp'] = True
-prob.driver.options['maxiter'] = 1
+
 prob.setup()
 
 prob.run_driver()
-"""
-import test.timing
-for num_elements in [10, 100, 200,500, 1000, 2000]:
-    prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
 
-    # prob.driver = ScipyOptimizeDriver()
-    # prob.driver.options['optimizer'] = 'SLSQP'
-    # prob.driver.options['tol'] = 1e-9
-    # prob.driver.options['disp'] = True
-
-    prob.setup(mode='fwd')
-    with test.timing.timeblock('direct time cost with ' + str(num_elements)+ " elements: "):
-        dd = prob.compute_totals(wrt=['inputs_comp.h'], of=['compliance_comp.compliance'])
-
-#h = prob['inputs_comp.h']
-#import matplotlib.pyplot as plt
-#print(dd)
-#plt.plot(np.arange(len(h)),h)
-#plt.show()
-#prob.check_totals(compact_print=True)
-"""
+print(prob['inputs_comp.h'])

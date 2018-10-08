@@ -94,7 +94,6 @@ class BeamModel:
     def rebuildShape(self,d):
         d_list_top = self.divide_list['TOP']
         d_list_bot = self.divide_list['BOT']
-        print(np.shape(self.airfoil['y_top']))
         y_top = [self.airfoil['y_top'][i]+d[j] for j,i in enumerate(d_list_top)]
         y_bot = [self.airfoil['y_bot'][i]+d[j] for j,i in enumerate(d_list_bot)]
         return self.xi,y_top,y_bot

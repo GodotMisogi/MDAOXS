@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-from openmdao.api import IndepVarComp, ExplicitComponent, Group, ImplicitComponent, Problem, ScipyOptimizeDriver
+from openmdao.api import IndepVarComp, ExplicitComponent, Group, ImplicitComponent, Problem, ScipyOptimizeDriver,PETScVector
 from scipy.linalg import lu_factor, lu_solve
 import scipy.io as si
 class MomentOfInertiaComp(ExplicitComponent):
@@ -98,7 +98,6 @@ class GlobalStiffnessMatrixComp(ExplicitComponent):
             ind2_ = 2 * ind + 4
 
             outputs['K'][ind1_:ind2_, ind1_:ind2_] += inputs['K_local'][ind, :, :]
-
         outputs['K'][2 * num_nodes + 0, 0] = 1.0
         outputs['K'][2 * num_nodes + 1, 1] = 1.0
         outputs['K'][0, 2 * num_nodes + 0] = 1.0
@@ -130,18 +129,15 @@ class StatesComp(ImplicitComponent):
         residuals['d'] = np.dot(inputs['K'], outputs['d']) - force_vector
 
     def solve_nonlinear(self, inputs, outputs):
+        print('solving linear system')
         force_vector = np.concatenate([self.options['force_vector'], np.zeros(2)])
-
         self.lu = lu_factor(inputs['K'])
-
         outputs['d'] = lu_solve(self.lu, force_vector)
 
     def linearize(self, inputs, outputs, partials):
         num_elements = self.options['num_elements']
         num_nodes = num_elements + 1
         size = 2 * num_nodes + 2
-
-        self.lu = lu_factor(inputs['K'])
 
         partials['d', 'K'] = np.outer(np.ones(size), outputs['d']).flatten()
         partials['d', 'd'] = inputs['K']
@@ -295,15 +291,11 @@ volume = 0.01
 
 num_elements = 10
 
-prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
-
 # prob.driver = ScipyOptimizeDriver()
 # prob.driver.options['optimizer'] = 'SLSQP'
 # prob.driver.options['tol'] = 1e-9
 # prob.driver.options['disp'] = True
 
-prob.setup()
-#prob.run_driver()
 from contextlib import contextmanager
 import time
 @contextmanager
@@ -316,13 +308,18 @@ def timeblock ( label ):
         print ('{}:{} '. format (label , end - start ))
 
 
-for num_elements in [10, 100, 200,500, 1000, 2000]:
+for num_elements in [500]:
     prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
 
-    prob.setup()
+    prob.setup(distributed_vector_class=PETScVector)
     with timeblock('fd time cost with ' + str(num_elements)+ " elements: "):
-        #prob.run_model()
-        dd = prob.compute_totals(wrt=['inputs_comp.h'], of=['compliance_comp.compliance'])
+        prob.driver = ScipyOptimizeDriver()
+        prob.driver.options['optimizer'] = 'SLSQP'
+        prob.driver.options['tol'] = 1e-9
+        prob.driver.options['disp'] = True
+        prob.driver.options['maxiter'] = 0
+        prob.run_driver()
+        #dd = prob.compute_totals(wrt=['inputs_comp.h'], of=['compliance_comp.compliance'])
 
 #h = prob['inputs_comp.h']
 #import matplotlib.pyplot as plt

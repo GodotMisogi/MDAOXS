@@ -3,7 +3,7 @@ from util.io.airfoilIO import loadAirfoil
 import numpy as np
 from demo.planeFrame2D.functionality import *
 class PlaneFrame(BeamModel):
-    def __init__(self,force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv', N=200,E=210E6, A=0.01, I = 0.00005):
+    def __init__(self,force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv', N=200,E=210E9, A=0.0001, I = 0.000005):
         super(PlaneFrame,self).__init__(force_file=force_file,N=N)
         self.num_element = N
         self.num_node = N+1
@@ -52,16 +52,16 @@ class PlaneFrame(BeamModel):
         return np.hstack((0,d,0))
 
 if __name__ == '__main__':
-    num_elements = 20
+    num_elements = 40
     num_nodes = num_elements+1
     planeF = PlaneFrame(N=num_elements)
-    displacement = planeF.computeDisplacement()/10
+    displacement = planeF.computeDisplacement()
     F = planeF.computeForce()[::2]
     from util.plot import *
 
     plt = oneDPlot(displacement, 'scatter', 1, xlabel='x', ylabel='displacement')
     finalizePlot(plt, title='The displacement distribution along the plane frame with %d nodes' % (num_nodes), savefig=True,
-                 fname='pf_d.eps')
+                 fname='pf_d.eps',bbox_inches='tight')
     plt.figure()
     plt = oneDPlot(F, 'scatter', 1, xlabel='x', ylabel='force')
     finalizePlot(plt, title='The shear force (in y direction) distribution along the plane frame with %d nodes' % (num_nodes), savefig=True,

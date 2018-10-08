@@ -308,14 +308,18 @@ prob.driver = ScipyOptimizeDriver()
 prob.driver.options['optimizer'] = 'SLSQP'
 prob.driver.options['tol'] = 1e-9
 prob.driver.options['disp'] = True
-
-prob.setup()
+prob.driver.options['maxiter'] = 1
+prob.setup(mode='fwd')
+#prob.setup()
 prob.run_driver()
 
+from scipy.io import savemat
+savemat('K',{'K':prob['states_comp.K']})
+"""
 K = prob['states_comp.K']
 
 print(np.linalg.det(K))
-"""
+
 import test.timing
 for num_elements in [10, 100, 200,500, 1000, 2000]:
     prob = Problem(model=BeamGroup(E=E, L=L, b=b, volume=volume, num_elements=num_elements))
@@ -328,7 +332,7 @@ for num_elements in [10, 100, 200,500, 1000, 2000]:
     prob.setup()
     with test.timing.timeblock('adjoint time cost with ' + str(num_elements)+ " elements: "):
         dd = prob.compute_totals(wrt=['inputs_comp.h'], of=['compliance_comp.compliance'])
-"""
+
 h = prob['inputs_comp.h']
 print(h)
 d = prob['displacements_comp.d']
@@ -338,3 +342,4 @@ print(d[::2])
 #plt.plot(np.arange(len(h)),h)
 #plt.show()
 #prob.check_totals(compact_print=True)
+"""

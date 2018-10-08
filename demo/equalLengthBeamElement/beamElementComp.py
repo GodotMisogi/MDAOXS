@@ -311,7 +311,7 @@ class BeamGroup(Group):
         self.add_constraint('volume_comp.volume', equals=volume)
 
 
-E = 210E6
+E = 210E9
 L = 1.
 b = 0.1
 volume = 0.01
@@ -330,13 +330,14 @@ prob.run_driver()
 h = prob['inputs_comp.h']
 d = prob['compliance_comp.displacements']
 from util.plot import *
-displacement = d[::2]/1000
+displacement = d[::2]
 
 plt = oneDPlot(displacement,'scatter',1,xlabel='x',ylabel='displacement')
-finalizePlot(plt,title='The displacement distribution along the beam with %d nodes'%(num_nodes),savefig=True,fname='beam_d.eps')
+plt.subplots_adjust()
+finalizePlot(plt,title='The displacement distribution along the beam with %d nodes'%(num_nodes),savefig=True,fname='beam_d.eps',bbox_inches='tight')
 
 # REBUILD
-displacement = d[::2]/1000
+displacement = d[::2]
 beam = BeamModel(N=num_elements)
 print(np.shape(displacement))
 print(np.shape(beam.computeForce()[::2]))

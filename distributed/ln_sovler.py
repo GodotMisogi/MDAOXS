@@ -1,6 +1,6 @@
 from petsc4py import PETSc
 import petsc4py
-from openmdao.api import ImplicitComponent,Problem, Group, IndepVarComp,ExplicitComponent
+from openmdao.api import ImplicitComponent,Problem, Group, IndepVarComp,DirectSolver,NonlinearRunOnce
 from openmdao.api import PETScVector, PETScKrylov
 import numpy as np
 from mpi4py import MPI
@@ -22,35 +22,40 @@ class LnSolver(ImplicitComponent):
         self.declare_partials('x','x')
 
 
-    def compute(self, inputs, outputs):
-        b = PETSc.Vec().createMPI(size=N, comm=PETSc.COMM_WORLD)
-        print('b')
+    def solve_nonlinear(self, inputs, outputs):
+        print("solving linear system")
+        rank = PETSc.COMM_WORLD.rank
+        num_ranks = PETSc.COMM_WORLD.size
+
+        N = self.options['N']
+        b = PETSc.Vec().createMPI(size=N, comm=MPI.COMM_WORLD)
         b.setValues(list(np.arange(N)), self.options['b'])
         b.assemble()
         A = PETSc.Mat()
-        A.create(comm=PETSc.COMM_WORLD)
+        A.create(comm=MPI.COMM_WORLD)
         A.setSizes([N, N])
         A.setType("mpiaij")
         A.setUp()
         A.setValues([i for i in range(N)], [i for i in range(N)], inputs['A'])
         A.assemble()
-        x,c = A.getVecs()
+        x, c = A.getVecs()
         x.set(0)
-        y = np.zeros(N)
         ksp = PETSc.KSP()
-        ksp.create(PETSc.COMM_WORLD)
+        ksp.create(MPI.COMM_WORLD)
         ksp.setOperators(A)
         ksp.setFromOptions()
         ksp.solve(b, x)
-        comm = MPI.COMM_WORLD
-        rank = MPI.COMM_WORLD.Get_rank()
-        comm.Reduce([x[:], MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM, root=0)
+        local_x = np.zeros(N)
+        id_start, id_end = A.getOwnershipRange()
+        # print("processors %d"%rank," owns %d,%d"%(id_start,id_end))
+        local_x[id_start:id_end] = x[...]
+        global_x = np.zeros(N)
+        # print(np.array(x))
+        MPI.COMM_WORLD.Reduce([local_x, MPI.DOUBLE], [global_x, MPI.DOUBLE], op=MPI.SUM, root=0)
 
         if rank == 0:
-            print(np.dot(inputs['A'],y)-b)
-
-        outputs['x'] = y
-
+            #print(np.dot(inputs['A'],global_x)-self.options['b'])
+            outputs['x'] = global_x
 
     def apply_nonlinear(self, inputs, outputs, residuals):
         b = self.options['b']
@@ -63,7 +68,7 @@ class LnSolver(ImplicitComponent):
 
 
 if __name__ == '__main__':
-    N = 10
+    N = 500
     prob = Problem(model=Group())
     lhA = IndepVarComp()
     lhA.add_output(name='A',val=np.eye(N))
@@ -71,12 +76,23 @@ if __name__ == '__main__':
     prob.model.add_subsystem(name='lhA',subsys=lhA,promotes_outputs=['A'])
     prob.model.add_subsystem(name='ln',subsys=LnSolver(N=N, b=np.array(np.arange(N))))
 
-    #prob.model.linear_solver = PETScKrylov()
-    #prob.model.nonlinear_solver = NewtonSolver()
+    prob.model.linear_solver = DirectSolver()
+    prob.model.nonlinear_solver = NonlinearRunOnce()
     #prob.model.nonlinear_solver.options['maxiter'] = 100
     #prob.model.nonlinear_solver.options['iprint'] = 0
 
     prob.setup()
     prob['A']=np.eye(N)
+    rank = MPI.COMM_WORLD.rank
+    size = MPI.COMM_WORLD.size
+    import time
+    t0 = time.clock()
     prob.run_model()
-    print(prob['ln.x'])
+    t1 = time.clock()-t0
+
+    print("linear solver using %d processors spend %f second"%(rank,t1))
+    if rank == 0:
+
+        print(prob['ln.x'])
+
+

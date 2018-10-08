@@ -5,7 +5,7 @@ import scipy.sparse.linalg as ssl
 from openmdao.api import Problem
 from demo.equalLengthBeamElement.functionality import *
 from util.io.airfoilIO import *
-from demo.equalLengthBeamElement.BeamModel import computeForce2
+from demo.equalLengthBeamElement.BeamModel import *
 def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv', N=200):
 
     info = np.loadtxt(force_file,delimiter=',',skiprows=1)
@@ -97,14 +97,15 @@ def computeForce(force_file='/Users/gakki/Dropbox/thesis/surface_flow_sort.csv',
 if __name__ == '__main__':
     NElement = 20
     NNode = NElement + 1
-    E = 210E6
+    E = 210E9
     A = 0.01
     I = 0.00005
     K = np.zeros(shape=(3 * NNode, 3 * NNode))
 
 
     X, Y, F = computeForce(N=NElement)
-    F = computeForce2(N=NElement)
+    beamp = BeamModel(N=NElement)
+    F = beamp.computeForce()
     #import scipy.io as sio
     #sio.savemat('XYF.mat',{'X':X,'Y':Y,'F':F})
     for element in range(NElement):
@@ -138,8 +139,7 @@ if __name__ == '__main__':
     from util.plot import *
     plt.figure()
     plt = oneDPlot(d,'scatter',1,xlabel='x',ylabel='displacement')
-    finalizePlot(plt, title='The displacement distribution along the plane frame with %d nodes'%NNode,savefig=True,fname='pf_d.eps'
-                                                                                                     )
+    finalizePlot(plt, title='The displacement distribution along the plane frame with %d nodes'%NNode,savefig=True,fname='pf_d.eps',bbox_inches='tight')
     plt.figure()
     plt = oneDPlot(F[::2],'scatter',1,xlabel='x',ylabel='shear force in y direction')
     finalizePlot(plt, title='The shear force (in y direction) distribution alone the plane frame with %d nodes'%NNode,savefig=True,fname='pf_f.eps')

@@ -4,12 +4,10 @@ import numpy as np
 import scipy.io as si
 rank = PETSc.COMM_WORLD.rank
 num_ranks = PETSc.COMM_WORLD.size
-rows = np.load('rows.npy')
-cols = np.load('cols.npy')
-data = np.load('data.npy')
-#Amat = si.loadmat('A.mat')['A']
 
-N= 104
+Amat = si.loadmat('A.mat')['A']
+
+N= 44
 A = PETSc.Mat()
 A.create(comm=MPI.COMM_WORLD)
 A.setSizes([N, N])
@@ -17,17 +15,10 @@ A.setType("aij")
 A.setUp()
 
 id_start, id_end = A.getOwnershipRange()
+print(type(Amat.todense()))
 
+A.setValues(list(np.arange(N)),list(np.arange(N)),Amat.todense())
 
-#A.setValues(list(np.arange(N)),list(np.arange(N)),Amat)
-
-#for i in range(0,N):
-#    A.setValue(i,i,i+1)
-
-for idx, (row, col) in enumerate(zip(rows, cols)):
-    A.setValue(row, col, data[idx])
-A.setValue(N-2,N-2,0)
-A.setValue(N-1,N-1,0)
 A.assemblyBegin()
 A.assemblyEnd()
 
